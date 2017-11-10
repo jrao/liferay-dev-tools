@@ -1,0 +1,77 @@
+#!/bin/bash
+#
+# Wrapper for docker
+
+#Global Variables
+dockercontainer_options=('exists')
+dockercontainer_options_create=('recreate' 'run' 'start')
+
+#Functions
+dockercontainer() {
+	# @description used for managing docker containers
+	# @param $1 container name
+	# @param $2 available docker commands listed: dockerbasecontainer_options*
+	# @param $... additional parameters based on docker command used
+	# @output varies, depending on the command used
+
+	if [ -n "$1" ] && [ -n "$2" ]; then
+		case "$1" in
+			'exists')
+				if [ $(dockerbasecontainer status "$2" | awk 'NR > 1' | wc -l) -gt 0 ]; then
+					return 0
+				fi
+
+				return 1;;
+			'recreate')
+				if (dockercontainer exists "$2"); then
+					dockerbasecontainer rm "$2"
+				fi
+
+				dockercontainer run "${@:2:${#}}"
+
+				return;;
+			'run')
+				docker run --name "$2" $(array_to_string_delimited ' ' "${@:5:${#}}") -d "$3" $4
+				return;;
+			'start')
+				if (! dockercontainer exists "$2"); then
+					dockercontainer run "${@:2:${#}}"
+				else
+					dockerbasecontainer "$1" "$2"
+				fi
+
+				return;;
+			*)
+				dockerbasecontainer "${@}"
+				return;;
+		esac
+	fi
+
+	echo "Usage: ${FUNCNAME[0]} {$(usage_options_formatted ${dockerbasecontainer_options[@]} ${dockercontainer_options[@]})} container-name"
+	echo "Usage: ${FUNCNAME[0]} $(usage_options_formatted ${dockerbasecontainer_options_exec[@]}) container-name [-d] target-command"
+	echo "Usage: ${FUNCNAME[0]} {$(usage_options_formatted ${dockercontainer_options_create[@]})} container-name docker-image target-command [other-options]"
+}
+
+init_dockerbasecontainer() {
+	# @description source dockerbasecontainer to make it's functions available
+	# @output None
+
+	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
+	local scriptpath="${repodir}/docker/dockerbasecontainer"
+
+	if [ -f "${scriptpath}" ]; then
+		. ${scriptpath}
+	else
+		echo "Error: Could not load dockerbasecontainer"
+		return 1
+	fi
+}
+
+#Main
+init_dockerbasecontainer
+
+if [ "$0" = "${BASH_SOURCE}" ]; then
+	dockercontainer "${@}"
+
+	exit $?
+fi

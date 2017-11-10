@@ -1,0 +1,116 @@
+#!/bin/bash
+#
+# Base wrapper for docker
+
+#Global Variables
+dockerbasecontainer_options=(
+	'ip' 'name' 'restart' 'rm' 'shell' 'start' 'status' 'stop'
+)
+dockerbasecontainer_options_exec=('exec')
+
+#Functions
+array_to_string_delimited() {
+	# @description output array as a string, with delimiter as the separator
+	# @description reference: https://superuser.com/a/720157
+	# @param $1 delimiter 
+	# @param $2 array
+	# @output string output of the array, with delimiter as the separator
+
+	if [ $# -ge 2 ] ; then
+		local delimiter="$1"
+		local array=("${@:2:${#}}")
+
+		echo $(awk -v sep="$delimiter" '
+			BEGIN{
+				ORS=OFS="";
+				for(i=1;i<ARGC;i++){
+					arg=ARGV[i];
+					print arg,ARGC-i-1?sep:""
+				}
+			}' "${array[@]}")
+	else
+		echo "Usage: ${FUNCNAME[0]} delimiter array[@]"
+	fi
+}
+
+array_sorted_unique() {
+	# @description used to sort and remove duplicates from the provided array
+	# @description reference: https://superuser.com/a/720157
+	# @param $1 array
+	# @output string output of the array, sorted and without duplicates
+
+	if [ "${#@}" -gt 0 ]; then
+		printf '%s\n' "${@}" | sort -u
+	else
+		echo "Usage: ${FUNCNAME[0]} array"
+	fi
+}
+
+usage_options_formatted() {
+	# @description used to format usage options for consistency and readability
+	# @param $1 usage options array
+	# @output string output of the Usage statement, formatted
+	
+	array_to_string_delimited "|" $(array_sorted_unique "${@}")
+}
+
+dockerbasecontainer() {
+	# @description used to add additional basic commands for docker
+	# @param $1 container name
+	# @param $2 available docker commands listed: dockerbasecontainer_options*
+	# @param $... additional parameters based on docker command used
+	# @output varies, depending on the command used
+
+	if [ -n "$1" ] && [ -n "$2" ]; then
+		case "$1" in
+			'exec')
+				if [ -n "$3" ]; then
+					if [ "$3" == "-d" ] || [ "$3" == "-it" ]; then
+						docker exec $3 "$2" "${@:4:${#}}"
+					else
+						docker exec "$2" "${@:3:${#}}"
+					fi
+
+					return
+				fi;;
+			'health')
+				echo $(docker inspect --format "{{.State.Health.Status }}" $2 2> /dev/null)
+				return ;;
+			'ip')
+				echo $(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}' $2 2> /dev/null) | tr ' ' '\n'
+				return;;
+			'name')
+				echo "$2"
+				return;;
+			'restart')
+				docker restart "$2"
+				return;;
+			'rm')
+				docker rm -f "$2"
+				return;;
+			'shell')
+				docker exec -it "$2" /bin/bash
+				return;;
+			'start')
+				docker start "$2"
+				return;;
+			'status')
+				#docker ps -a -f name="$2$"
+				docker ps -a | awk '{if (NR==1 || $NF ~ "^'$2'$"){print}}'
+				return;;
+			'stop')
+				docker stop "$2"
+				return;;
+		esac
+	fi
+
+	echo "Usage: ${FUNCNAME[0]} {$(usage_options_formatted ${dockerbasecontainer_options[@]})} container-name"
+	echo "Usage: ${FUNCNAME[0]} $(usage_options_formatted ${dockerbasecontainer_options_exec[@]}) container-name [-d] target-command ..."
+}
+
+#Main
+if [ "$0" = "${BASH_SOURCE}" ]; then
+	dockerbasecontainer "${@}"
+
+	exit $?
+fi
