@@ -1,0 +1,55 @@
+#!/bin/bash
+#
+# docker template for Elasticsearch Head
+# Hostname: localhost
+# Port: 9100 (configured below via -p 9100:9100)
+
+#Functions
+dockerelasticsearchhead() {
+	# @description create a docker container for Elasticsearch Head
+	# @param $1 available commands listed in usages
+	# @param $... additional parameters based on inital command used
+	# @output varies, depending on the command used
+
+	local dockerimage="mobz/elasticsearch-head:5-alpine"
+	local containername="ldt_elasticsearchhead"
+	local containercmd=""
+	local containeroptions=(
+		"-p 9100:9100"
+	)
+
+	if [ -n "$1" ]; then
+		case "$1" in
+			'recreate'|'run'|'start')
+				dockercontainer "$1" "$containername" "$dockerimage" "$containercmd" "${containeroptions[@]}";;
+			*)
+				dockercontainer "$1" "$containername" "${@:2:${#}}";;
+		esac
+	else
+		echo "Usage: ${FUNCNAME[0]} {$(usage_options_formatted ${dockercontainer_options[@]} ${dockerbasecontainer_options[@]})}"
+	fi
+}
+
+init_dockercontainer() {
+	# @description source dockercontainer to make it's functions available
+	# @output None
+
+	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
+	local scriptpath="${repodir}/docker/dockercontainer"
+
+	if [ -f "${scriptpath}" ]; then
+		. ${scriptpath}
+	else
+		echo "Error: Could not load dockercontainer"
+		return 1
+	fi
+}
+
+#Main
+init_dockercontainer
+
+if [ "$0" = "${BASH_SOURCE}" ]; then
+	dockerelasticsearchhead "${@}"
+
+	exit $?
+fi

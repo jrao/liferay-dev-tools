@@ -1,0 +1,64 @@
+#!/bin/bash
+#
+# docker template for SQL Server
+# Username: SA
+# Password: <YourStrong!Passw0rd> (configured below via -e MSSQL_SA_PASSWORD=\<YourStrong!Passw0rd\>)
+# Hostname: localhost
+# Port: 1433 (configured below via -p 1433:1433)
+# JDBC URL Example: jdbc:sqlserver://localhost:1433
+#
+# References:
+# https://docs.microsoft.com/en-us/sql/linux/quickstart-install-connect-docker
+# https://docs.microsoft.com/en-us/sql/relational-databases/security/password-policy1
+
+#Functions
+dockersqlserver() {
+	# @description create a docker container for SQL Server
+	# @param $1 available commands listed in usages
+	# @param $... additional parameters based on inital command used
+	# @output varies, depending on the command used
+
+	local dockerimage="microsoft/mssql-server-linux:2017-latest"
+	local containername="ldt_sqlserver"
+	local containercmd=""
+	local containeroptions=(
+		"-e ACCEPT_EULA=Y"
+		"-e MSSQL_SA_PASSWORD=\<YourStrong!Passw0rd\>"
+		"-p 1433:1433"
+	)
+
+	if [ -n "$1" ]; then
+		case "$1" in
+			'recreate'|'run'|'start')
+				dockercontainer "$1" "$containername" "$dockerimage" "$containercmd" "${containeroptions[@]}";;
+			*)
+				dockercontainer "$1" "$containername" "${@:2:${#}}";;
+		esac
+	else
+		echo "Usage: ${FUNCNAME[0]} {$(usage_options_formatted ${dockercontainer_options[@]} ${dockerbasecontainer_options[@]})}"
+	fi
+}
+
+init_dockercontainer() {
+	# @description source dockercontainer to make it's functions available
+	# @output None
+
+	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
+	local scriptpath="${repodir}/docker/dockercontainer"
+
+	if [ -f "${scriptpath}" ]; then
+		. ${scriptpath}
+	else
+		echo "Error: Could not load dockercontainer"
+		return 1
+	fi
+}
+
+#Main
+init_dockercontainer
+
+if [ "$0" = "${BASH_SOURCE}" ]; then
+	dockersqlserver "${@}"
+
+	exit $?
+fi

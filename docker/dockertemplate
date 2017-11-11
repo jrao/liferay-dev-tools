@@ -1,0 +1,93 @@
+#!/bin/bash
+#
+# easily use pre-made docker templates
+
+#Functions
+dockertemplate() {
+	# @description used for easily accessing pre-made docker templates
+	# @param $1 option flag or template name
+	# @param $... additional parameters based on command used
+	# @output varies, depending on the command used
+
+	if [ "$1" == "-l" ]; then
+		templates_list
+		return
+	elif [ -n "$1" ]; then
+		local generatefunction=0
+
+		if [ "$1" == "-a" ]; then
+			generatefunction=1
+			shift
+		fi
+
+		local templatefilepath="$(templates_getfilepath $1)"
+
+		if [ -f "${templatefilepath}" ]; then
+			if [ "${generatefunction}" == "1" ]; then
+				local scriptname=$(basename ${templatefilepath})
+				local name=$(basename $(dirname ${templatefilepath}))
+
+				printf "\n# Copy to your bash aliases \n# Docker Template: ${name}\n${scriptname}() {\n\t${templatefilepath} \"\$@\"\n}\n\n"
+			else
+				${templatefilepath} "${@:2:${#}}"
+			fi
+		else
+			echo "Error: Invalid template-name: $1"
+		fi
+
+		return
+	fi
+
+	echo "Usage: ${FUNCNAME[0]} [-l] 			List available docker templates"
+	echo "Usage: ${FUNCNAME[0]} [-a] template-name 	Generate bash alias for using template"
+	echo "Usage: ${FUNCNAME[0]} template-name 		Use template directly"
+}
+
+templates_getfilepath() {
+	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
+	local templatedir="${repodir}/docker/templates"
+	
+	pushd ${templatedir} > /dev/null
+	
+	local templatepaths=($(find . -type f -name "docker[a-zA-Z0-9]*" -mindepth 3))
+
+	popd > /dev/null
+
+	if [ -n "$1" ]; then
+		for path in "${templatepaths[@]}"; do
+			local patharr=($(echo ${path} | tr "/" "\n"))
+			local category=${patharr[1]}
+			local name=${patharr[2]}
+			local scriptname=${patharr[3]}
+
+			if [ "$1" == "${category}/${name}" ]; then
+				echo "${templatedir}/${category}/${name}/${scriptname}"
+				return;
+			fi
+		done
+	else
+		echo "${templatepaths[@]}"
+	fi
+}
+
+templates_list() {
+	local templatepaths=($(templates_getfilepath))
+
+	echo "List of Available templates:"
+	
+	for path in "${templatepaths[@]}"; do
+		local patharr=($(echo ${path} | tr "/" "\n"))
+		local category=${patharr[1]}
+		local name=${patharr[2]}
+
+		echo "	$category/$name"
+	done
+}
+
+
+#Main
+if [ "$0" = "${BASH_SOURCE}" ]; then
+	dockertemplate "${@}"
+
+	exit $?
+fi
