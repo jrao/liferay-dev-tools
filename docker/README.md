@@ -27,7 +27,12 @@ Here's a list of templates that are currently available:
 
 Before using the docker scripts, make sure you have docker installed.
 
-Link: [https://www.docker.com/community-edition#/download]
+Link: <https://www.docker.com/community-edition#/download>
+
+**Note:**
+Currently, these scripts have only been tested on OSX. I have not tested if the following scripts will work on other Operating Systems.
+
+But, I did make an effort to use bash functions that should be available on other Operating Systems.
 
 # Initial Setup
 
@@ -66,8 +71,13 @@ dockertemplate -a databases/mysql
 
 4\. Here is a sample output of the generated alias:
 ```
-# Copy to your bash aliases
-# Docker Template: mysql
+# Copy the follwing to your bash aliases:
+#
+# docker template for MYSQL
+# Username: root
+# Password: test (configured below via -e MYSQL_ROOT_PASSWORD=test)
+# Hostname: localhost
+# Port: 3306 (configured below via -p 3306:3306)
 dockermysql() {
 	/Users/liferay/Liferay/development/repos/liferay-dev-tools/docker/templates/databases/mysql/dockermysql "$@"
 }
@@ -83,7 +93,7 @@ dockermysql start
 
 If you would like to create your own template for adding additional services, you can check out the sample  template blueprint, located in docker/templates/template/blueprint/dockertemplateblueprint
 
-Reference: <https://github.com/ericyanLr/liferay-dev-tools/docker/templates/template/blueprint/dockertemplateblueprint>
+Reference: <https://github.com/ericyanLr/liferay-dev-tools/tree/master/docker/templates/template/blueprint>
 
 With this blueprint, we can easily create additional templates for services.
 The main portions that we need to focus on are:
