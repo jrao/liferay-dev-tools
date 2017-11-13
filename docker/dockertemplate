@@ -27,7 +27,18 @@ dockertemplate() {
 				local scriptname=$(basename ${templatefilepath})
 				local name=$(basename $(dirname ${templatefilepath}))
 
-				printf "\n# Copy to your bash aliases \n# Docker Template: ${name}\n${scriptname}() {\n\t${templatefilepath} \"\$@\"\n}\n\n"
+				cat ${templatefilepath} | awk '{
+					if (NR == 1) {
+						printf "\n# Copy the follwing to your bash aliases:\n"
+					} else if ($1 !~ "^#.*") {
+						exit
+					} else {
+						print
+					}
+				}'
+
+				printf "${scriptname}() {\n\t${templatefilepath} \"\$@\"\n}\n\n"
+
 			else
 				${templatefilepath} "${@:2:${#}}"
 			fi
