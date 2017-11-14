@@ -2,7 +2,7 @@
 #
 # docker template for DB2 Express
 # Username: db2inst1
-# Password: db2inst1 (configured below via -e DB2INST1_PASSWORD)
+# Password: test (configured below via -e DB2INST1_PASSWORD=test)
 # Hostname: localhost
 # Port: 50000 (configured below via -p 50000:50000)
 # DB2(LUW) URL Example: jdbc:db2://localhost:50000/database_name
@@ -27,18 +27,18 @@ dockerdb2express() {
 		case "$1" in
 			'dbcreate')
 				if [ -n "$2" ] ; then
-					dockercontainer "exec" $containername su -c "db2 CREATE DB $2 using codeset UTF-8 territory us PAGESIZE 32768" - db2inst1
+					dockercontainer "exec" ${containername} su -c "db2 CREATE DB $2 using codeset UTF-8 territory us PAGESIZE 32768" - db2inst1
 					return
 				fi;;
 			'dbdrop')
 				if [ -n "$2" ] ; then
-					dockercontainer "exec" $containername su -c "db2 DROP DB $2" - db2inst1
+					dockercontainer "exec" ${containername} su -c "db2 DROP DB $2" - db2inst1
 					return
 				fi;;
 			'recreate'|'run'|'start')
-				dockercontainer "$1" "$containername" "$dockerimage" "$containercmd" "${containeroptions[@]}";;
+				dockercontainer "$1" "${containername}" "${dockerimage}" "${containercmd}" "${containeroptions[@]}";;
 			*)
-				dockercontainer "$1" "$containername" "${@:2:${#}}";;
+				dockercontainer "$1" "${containername}" "${@:2:${#}}";;
 		esac
 	else
 		echo "Usage: ${FUNCNAME[0]} {$(usage_options_formatted ${dockercontainer_options[@]} ${dockerbasecontainer_options[@]})}"

@@ -24,9 +24,9 @@ dockernginx() {
 	if [ -n "$1" ]; then
 		case "$1" in
 			'recreate'|'run'|'start')
-				dockercontainer "$1" "$containername" "$dockerimage" "$containercmd" "${containeroptions[@]}";;
+				dockercontainer "$1" "${containername}" "${dockerimage}" "${containercmd}" "${containeroptions[@]}";;
 			*)
-				dockercontainer "$1" "$containername" "${@:2:${#}}";;
+				dockercontainer "$1" "${containername}" "${@:2:${#}}";;
 		esac
 	else
 		echo "Usage: ${FUNCNAME[0]} {$(usage_options_formatted ${dockercontainer_options[@]} ${dockerbasecontainer_options[@]})}"

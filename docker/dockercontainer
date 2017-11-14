@@ -40,7 +40,7 @@ dockercontainer() {
 				cmd_args=${cmd_args//\'/\\\'}
 
 				# Craft docker command to better handle command options with single quotes
-				local cmd=$(echo docker run --name "$2" ${cmd_args} -d "$3" $4 | xargs)
+				local cmd="$(echo docker run --name "$2" ${cmd_args} -d "$3" $4 | xargs)"
 
 				bash -c "${cmd}"
 				return;;
