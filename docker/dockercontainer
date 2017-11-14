@@ -31,7 +31,18 @@ dockercontainer() {
 
 				return;;
 			'run')
-				docker run --name "$2" $(array_to_string_delimited ' ' "${@:5:${#}}") -d "$3" $4
+				local args_str="${@:5:${#}}"
+
+				# Preserve forward slashes for escaped characters
+				local cmd_args=${args_str/\\/\\\\}
+
+				# Preserve single quotes
+				cmd_args=${cmd_args//\'/\\\'}
+
+				# Craft docker command to better handle command options with single quotes
+				local cmd=$(echo docker run --name "$2" ${cmd_args} -d "$3" $4 | xargs)
+
+				bash -c "${cmd}"
 				return;;
 			'start')
 				if (! dockercontainer exists "$2"); then
