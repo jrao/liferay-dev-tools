@@ -26,13 +26,7 @@ Here's a list of templates that are currently available:
 # Prerequisites
 
 Before using the docker scripts, make sure you have docker installed.
-
 Link: <https://www.docker.com/community-edition#/download>
-
-**Note:**
-Currently, these scripts have only been tested on OSX. I have not tested if the following scripts will work on other Operating Systems.
-
-But, I did make an effort to use bash functions that should be available on other Operating Systems.
 
 # Initial Setup
 
