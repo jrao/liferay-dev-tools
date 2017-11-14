@@ -34,7 +34,7 @@ dockercontainer() {
 				local args_str="${@:5:${#}}"
 
 				# Preserve forward slashes for escaped characters
-				local cmd_args=${args_str/\\/\\\\}
+				local cmd_args=${args_str//\\/\\\\}
 
 				# Preserve single quotes
 				cmd_args=${cmd_args//\'/\\\'}
