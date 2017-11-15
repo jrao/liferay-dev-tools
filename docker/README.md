@@ -20,6 +20,7 @@ Here's a list of templates that are currently available:
 * Search Indexers
   * Elasticsearch
   * Elasticsearch Head
+  * Solr
 * Web Servers
   * Nginx
 

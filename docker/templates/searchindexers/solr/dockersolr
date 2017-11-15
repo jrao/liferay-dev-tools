@@ -1,0 +1,58 @@
+#!/bin/bash
+#
+# docker template for Solr
+# host: localhost
+# port: 8983 (configured below via -p 8983:8983)
+# directory: ./mycores/liferay (configured below via -v $(dirname ${BASH_SOURCE[0]})/mycores/liferay:/myconfig)
+#   can be used for configuring Solr
+
+#Functions
+dockersolr() {
+	# @description create a docker container for Solr
+	# @param $1 available commands listed in usages
+	# @param $... additional parameters based on inital command used
+	# @output varies, depending on the command used
+
+	local dockerimage="solr:5.5.4-alpine"
+	local containername="ldt_solr"
+	local containercmd="solr-precreate liferay /myconfig"
+	local containeroptions=(
+		"-v $(dirname ${BASH_SOURCE[0]})/mycores/liferay:/myconfig"
+		"-p 8983:8983"
+	)
+
+	if [ -n "$1" ]; then
+		case "$1" in
+			'recreate'|'run'|'start')
+				dockercontainer "$1" "${containername}" "${dockerimage}" "${containercmd}" "${containeroptions[@]}";;
+			*)
+				dockercontainer "$1" "${containername}" "${@:2:${#}}";;
+		esac
+	else
+		echo "Usage: ${FUNCNAME[0]} {$(usage_options_formatted ${dockercontainer_options[@]} ${dockerbasecontainer_options[@]})}"
+	fi
+}
+
+init_dockercontainer() {
+	# @description source dockercontainer to make it's functions available
+	# @output None
+
+	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
+	local scriptpath="${repodir}/docker/dockercontainer"
+
+	if [ -f "${scriptpath}" ]; then
+		. ${scriptpath}
+	else
+		echo "Error: Could not load dockercontainer"
+		return 1
+	fi
+}
+
+#Main
+init_dockercontainer
+
+if [ "$0" = "${BASH_SOURCE}" ]; then
+	dockersolr "${@}"
+
+	exit $?
+fi
