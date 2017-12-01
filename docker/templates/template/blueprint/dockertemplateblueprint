@@ -40,7 +40,7 @@ init_dockercontainer() {
 		. ${scriptpath}
 	else
 		echo "Error: Could not load dockercontainer"
-		return 1
+		exit 1
 	fi
 }
 
