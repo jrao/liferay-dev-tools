@@ -1,0 +1,75 @@
+#!/bin/bash
+#
+# docker template for apache
+# host: localhost
+# port: 443 (configured below via -p 443:443)
+# reverse proxy:
+#    modify the following properties in ./conf/extra/httpd-vhosts.conf:
+#        ProxyPass /liferay ajp://172.17.0.1:8009
+#        ProxyPassReverse /liferay ajp://172.17.0.1:8009
+#    For Liferay, add the following portal properties (modify accordingly):
+#        web.server.https.port=443
+#        web.server.protocol=https
+#        portal.proxy.path=/liferay
+# configuration files:
+#     ./conf/httpd.conf
+#     ./conf/extra/httpd-vhosts.conf
+#     ./conf/extra/httpd-ssl.conf
+# SSL (dummy certificate that was generated and set to expire in 365000 days):
+#    ./conf/dummy-server.crt
+#    ./conf/dummy-server.key
+
+#Functions
+dockerapache() {
+	# @description create a docker container for apache
+	# @param $1 available commands listed in usages
+	# @param $... additional parameters based on inital command used
+	# @output varies, depending on the command used
+
+	local dockerimage="httpd:2.4.25-alpine"
+	local containername="ldt_apache"
+	local containercmd=""
+	local containeroptions=(
+		"-v $(dirname ${BASH_SOURCE[0]})/conf/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro"
+		"-v $(dirname ${BASH_SOURCE[0]})/conf/extra/httpd-vhosts.conf:/usr/local/apache2/conf/extra/httpd-vhosts.conf:ro"
+		"-v $(dirname ${BASH_SOURCE[0]})/conf/extra/httpd-ssl.conf:/usr/local/apache2/conf/extra/httpd-ssl.conf:ro"
+		"-v $(dirname ${BASH_SOURCE[0]})/conf/dummy-server.crt:/usr/local/apache2/conf/dummy-server.crt:ro"
+		"-v $(dirname ${BASH_SOURCE[0]})/conf/dummy-server.key:/usr/local/apache2/conf/dummy-server.key:ro"
+		"-p 443:443"
+	)
+
+	if [ -n "$1" ]; then
+		case "$1" in
+			'recreate'|'run'|'start')
+				dockercontainer "$1" "${containername}" "${dockerimage}" "${containercmd}" "${containeroptions[@]}";;
+			*)
+				dockercontainer "$1" "${containername}" "${@:2:${#}}";;
+		esac
+	else
+		echo "Usage: ${FUNCNAME[0]} {$(usage_options_formatted ${dockercontainer_options[@]} ${dockerbasecontainer_options[@]})}"
+	fi
+}
+
+init_dockercontainer() {
+	# @description source dockercontainer to make it's functions available
+	# @output None
+
+	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
+	local scriptpath="${repodir}/docker/dockercontainer"
+
+	if [ -f "${scriptpath}" ]; then
+		. ${scriptpath}
+	else
+		echo "Error: Could not load dockercontainer"
+		exit 1
+	fi
+}
+
+#Main
+init_dockercontainer
+
+if [ "$0" = "${BASH_SOURCE}" ]; then
+	dockerapache "${@}"
+
+	exit $?
+fi
