@@ -22,6 +22,7 @@ Here's a list of templates that are currently available:
   * Elasticsearch Head
   * Solr
 * Web Servers
+  * Apache
   * Nginx
 
 # Prerequisites
