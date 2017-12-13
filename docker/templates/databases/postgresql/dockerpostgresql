@@ -2,9 +2,9 @@
 #
 # docker template for PostgreSQL
 # Username: postgres
-# Password: test (configured below via -e POSTGRES_PASSWORD=test)
+# Password: test (configured via -e POSTGRES_PASSWORD=test)
 # Hostname: localhost
-# Port: 5432 (configured below via - p5432:5432)
+# Port: 5432 (configured via - p5432:5432)
 
 #Functions
 dockerpostgresql() {

@@ -2,9 +2,9 @@
 #
 # docker template for MYSQL
 # Username: root
-# Password: test (configured below via -e MYSQL_ROOT_PASSWORD=test)
+# Password: test (configured via -e MYSQL_ROOT_PASSWORD=test)
 # Hostname: localhost
-# Port: 3306 (configured below via -p 3306:3306)
+# Port: 3306 (configured via -p 3306:3306)
 
 #Functions
 dockermysql() {

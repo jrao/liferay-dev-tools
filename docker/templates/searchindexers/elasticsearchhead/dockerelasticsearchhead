@@ -2,7 +2,7 @@
 #
 # docker template for Elasticsearch Head
 # Hostname: localhost
-# Port: 9100 (configured below via -p 9100:9100)
+# Port: 9100 (configured via -p 9100:9100)
 
 #Functions
 dockerelasticsearchhead() {

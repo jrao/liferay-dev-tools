@@ -2,8 +2,8 @@
 #
 # docker template for nginx
 # host: localhost
-# port: 8081 (configured below via -p 8081:80)
-# directory: ./html (configured below via -v $(dirname ${BASH_SOURCE[0]})/html:/usr/share/nginx/html:ro)
+# port: 8081 (configured via -p 8081:80)
+# directory: ./html (configured via -v $(dirname ${BASH_SOURCE[0]})/html:/usr/share/nginx/html:ro)
 #   can be used for adding custom web files
 
 #Functions

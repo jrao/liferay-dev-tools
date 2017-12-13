@@ -2,8 +2,8 @@
 #
 # docker template for Solr
 # host: localhost
-# port: 8983 (configured below via -p 8983:8983)
-# directory: ./mycores/liferay (configured below via -v $(dirname ${BASH_SOURCE[0]})/mycores/liferay:/myconfig)
+# port: 8983 (configured via -p 8983:8983)
+# directory: ./mycores/liferay (configured via -v $(dirname ${BASH_SOURCE[0]})/mycores/liferay:/myconfig)
 #   can be used for configuring Solr
 
 #Functions

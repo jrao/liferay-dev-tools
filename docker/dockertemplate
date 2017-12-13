@@ -27,7 +27,7 @@ dockertemplate() {
 				local scriptname=$(basename ${templatefilepath})
 				local name=$(basename $(dirname ${templatefilepath}))
 
-				cat ${templatefilepath} | awk '{
+				cat ${templatefilepath} | awk -v filePath="${templatefilepath}" '{
 					if (NR == 1) {
 						printf "\n# Copy the follwing to your bash aliases:\n"
 					} else if ($1 !~ "^#.*") {
@@ -35,6 +35,9 @@ dockertemplate() {
 					} else {
 						print
 					}
+				}
+				END {
+					print "#\n# Config file: " filePath "\n#"
 				}'
 
 				printf "${scriptname}() {\n\t${templatefilepath} \"\$@\"\n}\n\n"
@@ -49,9 +52,9 @@ dockertemplate() {
 		return
 	fi
 
-	echo "Usage: ${FUNCNAME[0]} [-l] 			List available docker templates"
-	echo "Usage: ${FUNCNAME[0]} [-a] template-name 	Generate bash alias for using template"
-	echo "Usage: ${FUNCNAME[0]} template-name 		Use template directly"
+	echo "Usage: ${FUNCNAME[0]} [-l]			List available docker templates"
+	echo "Usage: ${FUNCNAME[0]} [-a] <template-name>	Generate bash alias for using template"
+	echo "Usage: ${FUNCNAME[0]} <template-name>		Use template directly"
 }
 
 templates_getfilepath() {

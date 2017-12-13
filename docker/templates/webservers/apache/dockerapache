@@ -2,7 +2,7 @@
 #
 # docker template for apache
 # host: localhost
-# port: 443 (configured below via -p 443:443)
+# port: 443 (configured via -p 443:443)
 # reverse proxy:
 #    modify the following properties in ./conf/extra/httpd-vhosts.conf:
 #        ProxyPass /liferay ajp://172.17.0.1:8009
