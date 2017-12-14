@@ -4,7 +4,7 @@
 # Hostname: localhost
 # Port: 9200 (configured via -p 9200:9200)
 
-#Functions
+#Core Function
 dockerelasticsearch() {
 	# @description create a docker container for Elasticsearch
 	# @param $1 available commands listed in usages
@@ -27,14 +27,14 @@ dockerelasticsearch() {
 		"http.cors.allow-headers: \"X-Requested-With, Content-Type, Content-Length, X-User\""
 	)
 
-	local elasticsearch_options_delimited="$(array_to_string_delimited '\\n' "${elasticsearch_options[@]}")"
+	local elasticsearch_options_delimited="$(dockerutil array_to_string_delimited '\\n' "${elasticsearch_options[@]}")"
 
 	if [ -n "$1" ]; then
 		case "$1" in
 			'recreate'|'run'|'start')
 				local init_elastic
 
-				if [ "$1" == 'recreate' ] || (! dockercontainer 'exists' "${containername}"); then
+				if [ "$1" == 'recreate' ] || (! dockerbasecontainer 'exists' "${containername}"); then
 					init_elastic=1
 				fi
 
@@ -49,29 +49,74 @@ dockerelasticsearch() {
 				dockercontainer "$1" "${containername}" "${@:2:${#}}";;
 		esac
 	else
-		echo "Usage: ${FUNCNAME[0]} {$(usage_options_formatted ${dockercontainer_options[@]} ${dockerbasecontainer_options[@]})}"
+		local usage_options=(
+			$(dockerbasecontainer dockerbasecontainer_options)
+			$(dockercontainer dockercontainer_options)
+		)
+
+		echo "Usage: ${FUNCNAME[0]} ($(dockerutil usage_options_formatted ${usage_options[@]}))"
 	fi
 }
 
-init_dockercontainer() {
-	# @description source dockercontainer to make it's functions available
+#External Functions
+dockerbasecontainer() {
+	# @description reference dockerbasecontainer to utilize it's functions
 	# @output None
-	
+
+	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
+	local scriptpath="${repodir}/docker/dockerbasecontainer"
+
+	if [ -f "${scriptpath}" ]; then
+		${scriptpath} "$@"
+	else
+		echo "Error: Could not load dockerbasecontainer"
+		return 1
+	fi
+}
+
+dockercontainer() {
+	# @description reference dockercontainer to utilize it's functions
+	# @output None
+
 	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
 	local scriptpath="${repodir}/docker/dockercontainer"
 
 	if [ -f "${scriptpath}" ]; then
-		. ${scriptpath}
+		${scriptpath} "$@"
 	else
 		echo "Error: Could not load dockercontainer"
-		exit 1
+		return 1
 	fi
 }
 
-#Main
-init_dockercontainer
+dockerutil() {
+	# @description reference dockerutil to utilize it's functions
+	# @output None
 
+	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
+	local scriptpath="${repodir}/docker/dockerutil"
+
+	if [ -f "${scriptpath}" ]; then
+		${scriptpath} "$@"
+	else
+		echo "Error: Could not load dockerutil"
+		return 1
+	fi
+}
+
+verify_external_functions() {
+	# @description check if external functions can be loaded, or else exit the script
+	# @output None
+
+	if !(dockerbasecontainer > /dev/null); then dockerbasecontainer; exit 1; fi
+	if !(dockercontainer > /dev/null); then dockercontainer; exit 1; fi
+	if !(dockerutil > /dev/null); then dockerutil; exit 1; fi
+}
+
+#Main
 if [ "$0" = "${BASH_SOURCE}" ]; then
+	verify_external_functions
+
 	dockerelasticsearch "${@}"
 
 	exit $?

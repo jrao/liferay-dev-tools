@@ -7,7 +7,7 @@
 # Port: 50000 (configured via -p 50000:50000)
 # DB2(LUW) URL Example: jdbc:db2://localhost:50000/database_name
 
-#Functions
+#Core Function
 dockerdb2express() {
 	# @description create a docker container for DB2 Express
 	# @param $1 available commands listed in usages
@@ -41,30 +41,75 @@ dockerdb2express() {
 				dockercontainer "$1" "${containername}" "${@:2:${#}}";;
 		esac
 	else
-		echo "Usage: ${FUNCNAME[0]} {$(usage_options_formatted ${dockercontainer_options[@]} ${dockerbasecontainer_options[@]})}"
-		echo "Usage: ${FUNCNAME[0]} {dbcreate|dbdrop} database-name"
+		local usage_options=(
+			$(dockerbasecontainer dockerbasecontainer_options)
+			$(dockercontainer dockercontainer_options)
+		)
+
+		echo "Usage: ${FUNCNAME[0]} ($(dockerutil usage_options_formatted ${usage_options[@]}))"
+		echo "Usage: ${FUNCNAME[0]} (dbcreate|dbdrop) <database-name>"
 	fi
 }
 
-init_dockercontainer() {
-	# @description source dockercontainer to make it's functions available
+#External Functions
+dockerbasecontainer() {
+	# @description reference dockerbasecontainer to utilize it's functions
+	# @output None
+
+	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
+	local scriptpath="${repodir}/docker/dockerbasecontainer"
+
+	if [ -f "${scriptpath}" ]; then
+		${scriptpath} "$@"
+	else
+		echo "Error: Could not load dockerbasecontainer"
+		return 1
+	fi
+}
+
+dockercontainer() {
+	# @description reference dockercontainer to utilize it's functions
 	# @output None
 
 	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
 	local scriptpath="${repodir}/docker/dockercontainer"
 
 	if [ -f "${scriptpath}" ]; then
-		. ${scriptpath}
+		${scriptpath} "$@"
 	else
 		echo "Error: Could not load dockercontainer"
-		exit 1
+		return 1
 	fi
 }
 
-#Main
-init_dockercontainer
+dockerutil() {
+	# @description reference dockerutil to utilize it's functions
+	# @output None
 
+	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
+	local scriptpath="${repodir}/docker/dockerutil"
+
+	if [ -f "${scriptpath}" ]; then
+		${scriptpath} "$@"
+	else
+		echo "Error: Could not load dockerutil"
+		return 1
+	fi
+}
+
+verify_external_functions() {
+	# @description check if external functions can be loaded, or else exit the script
+	# @output None
+
+	if !(dockerbasecontainer > /dev/null); then dockerbasecontainer; exit 1; fi
+	if !(dockercontainer > /dev/null); then dockercontainer; exit 1; fi
+	if !(dockerutil > /dev/null); then dockerutil; exit 1; fi
+}
+
+#Main
 if [ "$0" = "${BASH_SOURCE}" ]; then
+	verify_external_functions
+
 	dockerdb2express "${@}"
 
 	exit $?

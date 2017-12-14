@@ -2,7 +2,7 @@
 #
 # easily use pre-made docker templates
 
-#Functions
+#Core Function
 dockertemplate() {
 	# @description used for easily accessing pre-made docker templates
 	# @param $1 option flag or template name
@@ -57,6 +57,7 @@ dockertemplate() {
 	echo "Usage: ${FUNCNAME[0]} <template-name>		Use template directly"
 }
 
+#Functions
 templates_getfilepath() {
 	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
 	local templatedir="${repodir}/docker/templates"

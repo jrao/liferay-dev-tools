@@ -3,10 +3,9 @@
 # Wrapper for docker
 
 #Global Variables
-dockercontainer_options=('exists')
-dockercontainer_options_create=('recreate' 'run' 'start')
+dockercontainer_options=('recreate' 'run' 'start')
 
-#Functions
+#Core Function
 dockercontainer() {
 	# @description used for managing docker containers
 	# @param $1 container name
@@ -16,12 +15,6 @@ dockercontainer() {
 
 	if [ -n "$1" ] && [ -n "$2" ]; then
 		case "$1" in
-			'exists')
-				if [ $(dockerbasecontainer status "$2" | awk 'NR > 1' | wc -l) -gt 0 ]; then
-					return 0
-				fi
-
-				return 1;;
 			'recreate')
 				if (dockercontainer exists "$2"); then
 					dockerbasecontainer rm "$2"
@@ -45,7 +38,7 @@ dockercontainer() {
 				bash -c "${cmd}"
 				return;;
 			'start')
-				if (! dockercontainer exists "$2"); then
+				if (! dockerbasecontainer exists "$2"); then
 					dockercontainer run "${@:2:${#}}"
 				else
 					dockerbasecontainer "$1" "$2"
@@ -58,31 +51,60 @@ dockercontainer() {
 		esac
 	fi
 
-	echo "Usage: ${FUNCNAME[0]} {$(usage_options_formatted ${dockerbasecontainer_options[@]} ${dockercontainer_options[@]})} container-name"
-	echo "Usage: ${FUNCNAME[0]} $(usage_options_formatted ${dockerbasecontainer_options_exec[@]}) container-name [-d] target-command"
-	echo "Usage: ${FUNCNAME[0]} {$(usage_options_formatted ${dockercontainer_options_create[@]})} container-name docker-image target-command [other-options]"
+	echo "Usage: ${FUNCNAME[0]} ($(dockerutil usage_options_formatted $(dockerbasecontainer dockerbasecontainer_options))) <container-name>"
+	echo "Usage: ${FUNCNAME[0]} ($(dockerutil usage_options_formatted $(dockerbasecontainer dockerbasecontainer_options_exec))) <container-name> [-d] <command>"
+	echo "Usage: ${FUNCNAME[0]} ($(dockerutil usage_options_formatted ${dockercontainer_options[@]})) <container-name> <docker-image> <container-command>"
 }
 
-init_dockerbasecontainer() {
-	# @description source dockerbasecontainer to make it's functions available
+#External Functions
+dockerbasecontainer() {
+	# @description reference dockerbasecontainer to utilize it's functions
 	# @output None
 
 	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
 	local scriptpath="${repodir}/docker/dockerbasecontainer"
 
 	if [ -f "${scriptpath}" ]; then
-		. ${scriptpath}
+		${scriptpath} "$@"
 	else
 		echo "Error: Could not load dockerbasecontainer"
-		exit 1
+		return 1
 	fi
 }
 
-#Main
-init_dockerbasecontainer
+dockerutil() {
+	# @description reference dockerutil to utilize it's functions
+	# @output None
 
+	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
+	local scriptpath="${repodir}/docker/dockerutil"
+
+	if [ -f "${scriptpath}" ]; then
+		${scriptpath} "$@"
+	else
+		echo "Error: Could not load dockerutil"
+		return 1
+	fi
+}
+
+verify_external_functions() {
+	# @description check if external functions can be loaded, or else exit the script
+	# @output None
+
+	if !(dockerbasecontainer > /dev/null); then dockerbasecontainer; exit 1; fi
+	if !(dockerutil > /dev/null); then dockerutil; exit 1; fi
+}
+
+#Main
 if [ "$0" = "${BASH_SOURCE}" ]; then
-	dockercontainer "${@}"
+	verify_external_functions
+
+	case "$1" in
+		'dockercontainer_options')
+			echo ${dockercontainer_options[@]};;
+		*)
+			dockercontainer "${@}"
+	esac
 
 	exit $?
 fi
