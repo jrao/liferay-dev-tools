@@ -6,7 +6,7 @@
 # Hostname: localhost
 # Port: 1433 (configured via -p 1433:1433)
 # JDBC URL Example: jdbc:sqlserver://localhost:1433
-
+#
 # Note: Make sure to configure Docker to allocate at least 4GB of ram
 #   Info: https://docs.microsoft.com/en-us/sql/linux/quickstart-install-connect-docker#requirements
 #
