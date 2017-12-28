@@ -1,0 +1,181 @@
+# Define password policy
+
+dn: ou=policies,dc=example,dc=org
+objectClass: organizationalUnit
+ou: policies
+
+dn: cn=default,ou=policies,dc=example,dc=org
+objectClass: applicationProcess
+objectClass: pwdPolicy
+cn: default
+pwdAllowUserChange: TRUE
+pwdAttribute: userPassword
+pwdCheckQuality: 1
+# 7 days
+pwdExpireWarning: 604800
+pwdFailureCountInterval: 0
+pwdGraceAuthNLimit: 0
+pwdInHistory: 5
+pwdLockout: TRUE
+# 30 minutes
+pwdLockoutDuration: 1800
+# 180 days
+pwdMaxAge: 15552000
+pwdMaxFailure: 5
+pwdMinAge: 0
+pwdMinLength: 1
+pwdMustChange: TRUE
+pwdSafeModify: FALSE
+
+# Define user organizational unit
+
+dn: ou=people,dc=example,dc=org
+objectClass: organizationalUnit
+ou: people
+
+# Create the test administrator user
+
+dn: cn=test,ou=people,dc=example,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectClass: inetOrgPerson
+givenname: Test
+sn: Test
+cn: test
+uid: test
+telephonenumber: 123-4567
+userpassword: test
+mail: test@liferay.com
+
+# Create other sample users
+
+dn: cn=test0,ou=people,dc=example,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectClass: inetOrgPerson
+givenname: Zero
+sn: Zero
+cn: test0
+uid: test0
+telephonenumber: 123-4567
+userpassword: test
+mail: test0@liferay.com
+
+dn: cn=test1,ou=people,dc=example,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectClass: inetOrgPerson
+givenname: One
+sn: One
+cn: test1
+uid: test1
+telephonenumber: 123-4567
+userpassword: test
+mail: test1@liferay.com
+
+dn: cn=test2,ou=people,dc=example,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectClass: inetOrgPerson
+givenname: Two
+sn: Two
+cn: test2
+uid: test2
+telephonenumber: 123-4567
+userpassword: test
+mail: test2@liferay.com
+
+dn: cn=test3,ou=people,dc=example,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectClass: inetOrgPerson
+givenname: Three
+sn: Three
+cn: test3
+uid: test3
+telephonenumber: 123-4567
+userpassword: test
+mail: test3@liferay.com
+
+dn: cn=test4,ou=people,dc=example,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectClass: inetOrgPerson
+givenname: Four
+sn: Four
+cn: test4
+uid: test4
+telephonenumber: 123-4567
+userpassword: test
+mail: test4@liferay.com
+
+dn: cn=test5,ou=people,dc=example,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectClass: inetOrgPerson
+givenname: Five
+sn: Five
+cn: test5
+uid: test5
+telephonenumber: 123-4567
+userpassword: test
+mail: test5@liferay.com
+
+dn: cn=test6,ou=people,dc=example,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectClass: inetOrgPerson
+givenname: Six
+sn: Six
+cn: test6
+uid: test6
+telephonenumber: 123-4567
+userpassword: test
+mail: test6@liferay.com
+
+dn: cn=test7,ou=people,dc=example,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectClass: inetOrgPerson
+givenname: Seven
+sn: Seven
+cn: test7
+uid: test7
+telephonenumber: 123-4567
+userpassword: test
+mail: test7@liferay.com
+
+dn: cn=test8,ou=people,dc=example,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectClass: inetOrgPerson
+givenname: Eight
+sn: Eight
+cn: test8
+uid: test8
+telephonenumber: 123-4567
+userpassword: test
+mail: test8@liferay.com
+
+dn: cn=test9,ou=people,dc=example,dc=org
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectClass: inetOrgPerson
+givenname: Nine
+sn: Nine
+cn: test9
+uid: test9
+telephonenumber: 123-4567
+userpassword: test
+mail: test9@liferay.com
