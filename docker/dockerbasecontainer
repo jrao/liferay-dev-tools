@@ -34,6 +34,12 @@ dockerbasecontainer() {
 			'ip')
 				echo $(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}' $2 2> /dev/null) | tr ' ' '\n'
 				return;;
+			'logs')
+				if (dockerbasecontainer exists "$2"); then
+					docker logs "${@:3:${#}}" $2
+				fi
+
+				return;;
 			'name')
 				if (dockerbasecontainer exists "$2"); then
 					echo "$2"
@@ -70,6 +76,7 @@ dockerbasecontainer_options=(
 	'exists' 'ip' 'name' 'restart' 'rm' 'shell' 'start' 'status' 'stop'
 )
 dockerbasecontainer_options_exec=('exec')
+dockerbasecontainer_options_logs=('logs')
 
 ldt_repo_dir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
 
@@ -80,7 +87,8 @@ usage() {
 
 	local usage_arr=(
 		"Usage: \${FUNCNAME[0]} ($(dockerutil usage_options_formatted ${dockerbasecontainer_options[@]})) <container-name>"
-		"Usage: \${FUNCNAME[0]} ($(dockerutil usage_options_formatted ${dockerbasecontainer_options_exec[@]})) <container-name> [-d] <command>"
+		"Usage: \${FUNCNAME[0]} $(dockerutil usage_options_formatted ${dockerbasecontainer_options_exec[@]}) <container-name> [-d] <command>"
+		"Usage: \${FUNCNAME[0]} $(dockerutil usage_options_formatted ${dockerbasecontainer_options_logs[@]}) <container-name> [-f]"
 	)
 
 	dockerutil usage_display_formatted "${usage_arr[@]}"
@@ -117,6 +125,8 @@ if [ "$0" = "${BASH_SOURCE}" ]; then
 			echo ${dockerbasecontainer_options[@]};;
 		'dockerbasecontainer_options_exec')
 			echo ${dockerbasecontainer_options_exec[@]};;
+		'dockerbasecontainer_options_logs')
+			echo ${dockerbasecontainer_options_logs[@]};;
 		'usage')
 			usage;;
 		*)

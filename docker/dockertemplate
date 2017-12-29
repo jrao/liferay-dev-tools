@@ -114,6 +114,7 @@ template_usage() {
 	local usage_arr=(
 		"Usage: \${FUNCNAME[0]} ($(dockerutil usage_options_formatted ${usage_options_common[@]}))"
 		"Usage: \${FUNCNAME[0]} $(dockerutil usage_options_formatted $(dockerbasecontainer dockerbasecontainer_options_exec)) [-d] <command>"
+		"Usage: \${FUNCNAME[0]} $(dockerutil usage_options_formatted $(dockerbasecontainer dockerbasecontainer_options_logs)) <container-name> [-f]"
 	)
 	
 	dockerutil usage_display_formatted "${usage_arr[@]}"
