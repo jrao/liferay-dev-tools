@@ -26,12 +26,7 @@ dockerelasticsearchhead() {
 				dockercontainer "$1" "${containername}" "${@:2:${#}}";;
 		esac
 	else
-		local usage_options=(
-			$(dockerbasecontainer dockerbasecontainer_options)
-			$(dockercontainer dockercontainer_options)
-		)
-
-		echo "Usage: ${FUNCNAME[0]} ($(dockerutil usage_options_formatted ${usage_options[@]}))"
+		dockerutil usage_display ${FUNCNAME[0]} "$(dockertemplate template_usage)"
 	fi
 }
 
@@ -66,6 +61,21 @@ dockercontainer() {
 	fi
 }
 
+dockertemplate() {
+	# @description reference dockertemplate to utilize it's functions
+	# @output None
+
+	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
+	local scriptpath="${repodir}/docker/dockertemplate"
+
+	if [ -f "${scriptpath}" ]; then
+		${scriptpath} "$@"
+	else
+		echo "Error: Could not load dockertemplate"
+		return 1
+	fi
+}
+
 dockerutil() {
 	# @description reference dockerutil to utilize it's functions
 	# @output None
@@ -87,6 +97,7 @@ verify_external_functions() {
 
 	if !(dockerbasecontainer > /dev/null); then dockerbasecontainer; exit 1; fi
 	if !(dockercontainer > /dev/null); then dockercontainer; exit 1; fi
+	if !(dockertemplate > /dev/null); then dockercontainer; exit 1; fi
 	if !(dockerutil > /dev/null); then dockerutil; exit 1; fi
 }
 
