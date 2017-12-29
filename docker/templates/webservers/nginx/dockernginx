@@ -34,21 +34,6 @@ dockernginx() {
 }
 
 #External Functions
-dockerbasecontainer() {
-	# @description reference dockerbasecontainer to utilize it's functions
-	# @output None
-
-	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
-	local scriptpath="${repodir}/docker/dockerbasecontainer"
-
-	if [ -f "${scriptpath}" ]; then
-		${scriptpath} "$@"
-	else
-		echo "Error: Could not load dockerbasecontainer"
-		return 1
-	fi
-}
-
 dockercontainer() {
 	# @description reference dockercontainer to utilize it's functions
 	# @output None
@@ -98,7 +83,6 @@ verify_external_functions() {
 	# @description check if external functions can be loaded, or else exit the script
 	# @output None
 
-	if !(dockerbasecontainer > /dev/null); then dockerbasecontainer; exit 1; fi
 	if !(dockercontainer > /dev/null); then dockercontainer; exit 1; fi
 	if !(dockertemplate > /dev/null); then dockercontainer; exit 1; fi
 	if !(dockerutil > /dev/null); then dockerutil; exit 1; fi
