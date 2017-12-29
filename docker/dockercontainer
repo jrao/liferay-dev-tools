@@ -2,9 +2,6 @@
 #
 # Wrapper for docker
 
-#Global Variables
-dockercontainer_options=('recreate' 'run' 'start')
-
 #Core Function
 dockercontainer() {
 	# @description used for managing docker containers
@@ -54,6 +51,12 @@ dockercontainer() {
 	dockerutil usage_display ${FUNCNAME[0]} "$(usage)"
 }
 
+#Global Variables
+dockercontainer_options=('recreate' 'run' 'start')
+
+ldt_repo_dir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
+
+#Functions
 usage() {
 	# @description organize usages and make re-usable
 	# @output string output of usages, formatted
@@ -71,8 +74,7 @@ dockerbasecontainer() {
 	# @description reference dockerbasecontainer to utilize it's functions
 	# @output None
 
-	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
-	local scriptpath="${repodir}/docker/dockerbasecontainer"
+	local scriptpath="${ldt_repo_dir}/docker/dockerbasecontainer"
 
 	if [ -f "${scriptpath}" ]; then
 		${scriptpath} "$@"
@@ -86,8 +88,7 @@ dockerutil() {
 	# @description reference dockerutil to utilize it's functions
 	# @output None
 
-	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
-	local scriptpath="${repodir}/docker/dockerutil"
+	local scriptpath="${ldt_repo_dir}/docker/dockerutil"
 
 	if [ -f "${scriptpath}" ]; then
 		${scriptpath} "$@"

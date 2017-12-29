@@ -57,6 +57,9 @@ dockertemplate() {
 	echo "Usage: ${FUNCNAME[0]} <template-name>		Use template directly"
 }
 
+#Global Variables
+ldt_repo_dir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
+
 #Functions
 templates_getfilepath() {
 	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
@@ -121,8 +124,7 @@ dockerbasecontainer() {
 	# @description reference dockerbasecontainer to utilize it's functions
 	# @output None
 
-	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
-	local scriptpath="${repodir}/docker/dockerbasecontainer"
+	local scriptpath="${ldt_repo_dir}/docker/dockerbasecontainer"
 
 	if [ -f "${scriptpath}" ]; then
 		${scriptpath} "$@"
@@ -136,8 +138,7 @@ dockercontainer() {
 	# @description reference dockercontainer to utilize it's functions
 	# @output None
 
-	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
-	local scriptpath="${repodir}/docker/dockercontainer"
+	local scriptpath="${ldt_repo_dir}/docker/dockercontainer"
 
 	if [ -f "${scriptpath}" ]; then
 		${scriptpath} "$@"
@@ -151,8 +152,7 @@ dockerutil() {
 	# @description reference dockerutil to utilize it's functions
 	# @output None
 
-	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
-	local scriptpath="${repodir}/docker/dockerutil"
+	local scriptpath="${ldt_repo_dir}/docker/dockerutil"
 
 	if [ -f "${scriptpath}" ]; then
 		${scriptpath} "$@"

@@ -2,12 +2,6 @@
 #
 # Base wrapper for docker
 
-#Global Variables
-dockerbasecontainer_options=(
-	'exists' 'ip' 'name' 'restart' 'rm' 'shell' 'start' 'status' 'stop'
-)
-dockerbasecontainer_options_exec=('exec')
-
 #Core Function
 dockerbasecontainer() {
 	# @description used to add additional basic commands for docker
@@ -71,6 +65,15 @@ dockerbasecontainer() {
 	dockerutil usage_display ${FUNCNAME[0]} "$(usage)"
 }
 
+#Global Variables
+dockerbasecontainer_options=(
+	'exists' 'ip' 'name' 'restart' 'rm' 'shell' 'start' 'status' 'stop'
+)
+dockerbasecontainer_options_exec=('exec')
+
+ldt_repo_dir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
+
+#Functions
 usage() {
 	# @description organize usages and make re-usable
 	# @output string output of usages, formatted
@@ -88,8 +91,7 @@ dockerutil() {
 	# @description reference dockerutil to utilize it's functions
 	# @output None
 
-	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
-	local scriptpath="${repodir}/docker/dockerutil"
+	local scriptpath="${ldt_repo_dir}/docker/dockerutil"
 
 	if [ -f "${scriptpath}" ]; then
 		${scriptpath} "$@"

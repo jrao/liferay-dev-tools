@@ -45,6 +45,10 @@ dockerdb2express() {
 	fi
 }
 
+#Global Variables
+ldt_repo_dir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
+
+#Functions
 usage() {
 	# @description organize usages
 	# @output string output of usages, formatted
@@ -62,8 +66,7 @@ dockercontainer() {
 	# @description reference dockercontainer to utilize it's functions
 	# @output None
 
-	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
-	local scriptpath="${repodir}/docker/dockercontainer"
+	local scriptpath="${ldt_repo_dir}/docker/dockercontainer"
 
 	if [ -f "${scriptpath}" ]; then
 		${scriptpath} "$@"
@@ -77,8 +80,7 @@ dockertemplate() {
 	# @description reference dockertemplate to utilize it's functions
 	# @output None
 
-	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
-	local scriptpath="${repodir}/docker/dockertemplate"
+	local scriptpath="${ldt_repo_dir}/docker/dockertemplate"
 
 	if [ -f "${scriptpath}" ]; then
 		${scriptpath} "$@"
@@ -92,8 +94,7 @@ dockerutil() {
 	# @description reference dockerutil to utilize it's functions
 	# @output None
 
-	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
-	local scriptpath="${repodir}/docker/dockerutil"
+	local scriptpath="${ldt_repo_dir}/docker/dockerutil"
 
 	if [ -f "${scriptpath}" ]; then
 		${scriptpath} "$@"
