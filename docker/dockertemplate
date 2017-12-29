@@ -99,10 +99,88 @@ templates_list() {
 	done
 }
 
+template_usage() {
+	# @description organize usages and make re-usable for all dockercontainer templates
+	# @output string output of usages, formatted
+
+	local usage_options_common=(
+		$(dockerbasecontainer dockerbasecontainer_options)
+		$(dockercontainer dockercontainer_options)
+	)
+
+	local usage_arr=(
+		"Usage: \${FUNCNAME[0]} ($(dockerutil usage_options_formatted ${usage_options_common[@]}))"
+		"Usage: \${FUNCNAME[0]} $(dockerutil usage_options_formatted $(dockerbasecontainer dockerbasecontainer_options_exec)) [-d] <command>"
+	)
+	
+	dockerutil usage_display_formatted "${usage_arr[@]}"
+}
+
+#External Functions
+dockerbasecontainer() {
+	# @description reference dockerbasecontainer to utilize it's functions
+	# @output None
+
+	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
+	local scriptpath="${repodir}/docker/dockerbasecontainer"
+
+	if [ -f "${scriptpath}" ]; then
+		${scriptpath} "$@"
+	else
+		echo "Error: Could not load dockerbasecontainer"
+		return 1
+	fi
+}
+
+dockercontainer() {
+	# @description reference dockercontainer to utilize it's functions
+	# @output None
+
+	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
+	local scriptpath="${repodir}/docker/dockercontainer"
+
+	if [ -f "${scriptpath}" ]; then
+		${scriptpath} "$@"
+	else
+		echo "Error: Could not load dockercontainer"
+		return 1
+	fi
+}
+
+dockerutil() {
+	# @description reference dockerutil to utilize it's functions
+	# @output None
+
+	local repodir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
+	local scriptpath="${repodir}/docker/dockerutil"
+
+	if [ -f "${scriptpath}" ]; then
+		${scriptpath} "$@"
+	else
+		echo "Error: Could not load dockerutil"
+		return 1
+	fi
+}
+
+verify_external_functions() {
+	# @description check if external functions can be loaded, or else exit the script
+	# @output None
+
+	if !(dockerbasecontainer > /dev/null); then dockerbasecontainer; exit 1; fi
+	if !(dockercontainer > /dev/null); then dockercontainer; exit 1; fi
+	if !(dockerutil > /dev/null); then dockerutil; exit 1; fi
+}
 
 #Main
 if [ "$0" = "${BASH_SOURCE}" ]; then
-	dockertemplate "${@}"
+	verify_external_functions
+
+	case "$1" in
+		'template_usage')
+			template_usage;;
+		*)
+			dockertemplate "${@}"
+	esac
 
 	exit $?
 fi

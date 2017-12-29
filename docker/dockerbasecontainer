@@ -68,8 +68,19 @@ dockerbasecontainer() {
 		esac
 	fi
 
-	echo "Usage: ${FUNCNAME[0]} ($(dockerutil usage_options_formatted ${dockerbasecontainer_options[@]})) <container-name>"
-	echo "Usage: ${FUNCNAME[0]} ($(dockerutil usage_options_formatted ${dockerbasecontainer_options_exec[@]})) <container-name> [-d] <command>"
+	dockerutil usage_display ${FUNCNAME[0]} "$(usage)"
+}
+
+usage() {
+	# @description organize usages and make re-usable
+	# @output string output of usages, formatted
+
+	local usage_arr=(
+		"Usage: \${FUNCNAME[0]} ($(dockerutil usage_options_formatted ${dockerbasecontainer_options[@]})) <container-name>"
+		"Usage: \${FUNCNAME[0]} ($(dockerutil usage_options_formatted ${dockerbasecontainer_options_exec[@]})) <container-name> [-d] <command>"
+	)
+
+	dockerutil usage_display_formatted "${usage_arr[@]}"
 }
 
 #External Functions
@@ -104,6 +115,8 @@ if [ "$0" = "${BASH_SOURCE}" ]; then
 			echo ${dockerbasecontainer_options[@]};;
 		'dockerbasecontainer_options_exec')
 			echo ${dockerbasecontainer_options_exec[@]};;
+		'usage')
+			usage;;
 		*)
 			dockerbasecontainer "${@}"
 	esac
