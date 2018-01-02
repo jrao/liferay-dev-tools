@@ -129,12 +129,12 @@ If you are planning to use a container for a long period of time or would like t
 
 The first step would be to also include the following essential functions to your .bash_aliases (or the equivalent on whichever shell you're using).
 ```
-dockerbasecontainer() {
-	${LDT_REPO_PATH}/docker/dockerbasecontainer "$@"
-}
-
 dockercontainer() {
 	${LDT_REPO_PATH}/docker/dockercontainer "$@"
+}
+
+dockertemplate() {
+	${LDT_REPO_PATH}/docker/dockertemplate "$@"
 }
 
 dockerutil() {
@@ -170,12 +170,7 @@ dockermysql() {
 				dockercontainer "$1" "${containername}" "${@:2:${#}}";;
 		esac
 	else
-		local usage_options=(
-			$(dockerbasecontainer dockerbasecontainer_options)
-			$(dockercontainer dockercontainer_options)
-		)
-
-		echo "Usage: ${FUNCNAME[0]} ($(dockerutil usage_options_formatted ${usage_options[@]}))"
+		dockerutil usage_display ${FUNCNAME[0]} "$(dockertemplate template_usage)"
 	fi
 }
 ```
