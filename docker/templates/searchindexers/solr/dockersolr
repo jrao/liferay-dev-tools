@@ -90,7 +90,9 @@ verify_external_functions() {
 
 #Main
 if [ "$0" = "${BASH_SOURCE}" ]; then
-	verify_external_functions
+	if [ "${LDT_DEBUG}" == "1" ]; then
+		verify_external_functions
+	fi
 	
 	dockersolr "${@}"
 
