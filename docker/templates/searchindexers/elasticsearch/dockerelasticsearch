@@ -34,7 +34,7 @@ dockerelasticsearch() {
 			'recreate'|'run'|'start')
 				local init_elastic
 
-				if [ "$1" == 'recreate' ] || (! dockerbasecontainer 'exists' "${containername}"); then
+				if [ "$1" == 'recreate' ] || (! dockercontainer 'exists' "${containername}"); then
 					init_elastic=1
 				fi
 
