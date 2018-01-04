@@ -10,14 +10,14 @@
 #         Elasticsearch throws ReceiveTimeoutTransportException if we use localhost:9300 for the transport address
 
 #Core Function
-dockerelasticsearch() {
+dockerelasticsearch_244() {
 	# @description create a docker container for Elasticsearch 2.4.4
 	# @param $1 available commands listed in usages
 	# @param $... additional parameters based on inital command used
 	# @output varies, depending on the command used
 
 	local dockerimage="elasticsearch:2.4.4"
-	local containername="ldt_elasticsearch"
+	local containername="ldt_elasticsearch_244"
 	local containercmd=""
 	local containeroptions=()
 
@@ -123,7 +123,7 @@ if [ "$0" = "${BASH_SOURCE}" ]; then
 		verify_external_functions
 	fi
 
-	dockerelasticsearch "${@}"
+	dockerelasticsearch_244 "${@}"
 
 	exit $?
 fi
