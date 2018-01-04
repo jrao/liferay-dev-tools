@@ -1,12 +1,17 @@
 #!/bin/bash
 #
-# docker template for Elasticsearch
-# Hostname: localhost
-# Port: 9200 (configured via -p 9200:9200)
+# docker template for Elasticsearch 2.4.4
+# Hostname: docker-container-ip
+# Port: 9200
+# Transport-Port: 9300
+#
+# Notes:
+#     Removed docker port forwarding to host, use container's IP directly instead
+#         Elasticsearch throws ReceiveTimeoutTransportException if we use localhost:9300 for the transport address
 
 #Core Function
 dockerelasticsearch() {
-	# @description create a docker container for Elasticsearch
+	# @description create a docker container for Elasticsearch 2.4.4
 	# @param $1 available commands listed in usages
 	# @param $... additional parameters based on inital command used
 	# @output varies, depending on the command used
@@ -14,17 +19,16 @@ dockerelasticsearch() {
 	local dockerimage="elasticsearch:2.4.4"
 	local containername="ldt_elasticsearch"
 	local containercmd=""
-	local containeroptions=(
-		"-p 9200:9200"
-		"-p 9300:9300"
-	)
+	local containeroptions=()
 
 	local elasticsearch_options=(
 		"cluster.name: LiferayElasticsearchCluster"
-		"network.host: 0.0.0.0"
+		"network.host: _site_"
 		"http.cors.enabled: true"
 		"http.cors.allow-origin: \"*\""
 		"http.cors.allow-headers: \"X-Requested-With, Content-Type, Content-Length, X-User\""
+		"index.number_of_shards: 1"
+		"index.number_of_replicas: 0"
 	)
 
 	local elasticsearch_options_delimited="$(dockerutil array_to_string_delimited '\\n' "${elasticsearch_options[@]}")"
@@ -43,7 +47,12 @@ dockerelasticsearch() {
 				if [ "${init_elastic}" == "1" ]; then
 					dockercontainer exec "${containername}" bash -c 'awk -v options="'"${elasticsearch_options_delimited//\"/\\\"}"'" '\''BEGIN{print options}'\'' > /usr/share/elasticsearch/config/elasticsearch.yml'
 
+					dockercontainer exec "${containername}" ./bin/plugin install analysis-kuromoji
+					dockercontainer exec "${containername}" ./bin/plugin install analysis-smartcn
+					dockercontainer exec "${containername}" ./bin/plugin install analysis-stempel
+
 					dockerelasticsearch 'restart'
+
 				fi;;
 			*)
 				dockercontainer "$1" "${containername}" "${@:2:${#}}";;
