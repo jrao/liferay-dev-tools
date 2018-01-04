@@ -73,13 +73,11 @@ templates_getfilepath() {
 
 	if [ -n "$1" ]; then
 		for path in "${templatepaths[@]}"; do
-			local patharr=($(echo ${path} | tr "/" "\n"))
-			local category=${patharr[1]}
-			local name=${patharr[2]}
-			local scriptname=${patharr[3]}
+			local templateSubPath=$(dirname ${path//.\//})
+			local scriptName=$(basename ${path//.\//})
 
-			if [ "$1" == "${category}/${name}" ]; then
-				echo "${templatedir}/${category}/${name}/${scriptname}"
+			if [ "$1" == "${templateSubPath}" ]; then
+				echo "${templatedir}/${templateSubPath}/${scriptName}"
 				return;
 			fi
 		done
@@ -94,11 +92,9 @@ templates_list() {
 	echo "List of Available templates:"
 	
 	for path in "${templatepaths[@]}"; do
-		local patharr=($(echo ${path} | tr "/" "\n"))
-		local category=${patharr[1]}
-		local name=${patharr[2]}
+		local templateSubPath=$(dirname ${path//.\//})
 
-		echo "	$category/$name"
+		echo "	${templateSubPath}"
 	done
 }
 
