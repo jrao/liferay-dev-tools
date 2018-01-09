@@ -29,6 +29,7 @@ dockerelasticsearch() {
 		"http.cors.allow-headers: \"X-Requested-With, Content-Type, Content-Length, X-User\""
 		"index.number_of_shards: 1"
 		"index.number_of_replicas: 0"
+		"path.repo: \"/usr/share/elasticsearch/data/repo\""
 	)
 
 	local elasticsearch_options_delimited="$(dockerutil array_to_string_delimited '\\n' "${elasticsearch_options[@]}")"
@@ -45,6 +46,8 @@ dockerelasticsearch() {
 				dockercontainer "$1" "${containername}" "${dockerimage}" "${containercmd}" "${containeroptions[@]}"
 
 				if [ "${init_elastic}" == "1" ]; then
+					dockercontainer exec "${containername}" mkdir /usr/share/elasticsearch/data/repo
+
 					dockercontainer exec "${containername}" bash -c 'awk -v options="'"${elasticsearch_options_delimited//\"/\\\"}"'" '\''BEGIN{print options}'\'' > /usr/share/elasticsearch/config/elasticsearch.yml'
 
 					dockercontainer exec "${containername}" ./bin/plugin install analysis-kuromoji
