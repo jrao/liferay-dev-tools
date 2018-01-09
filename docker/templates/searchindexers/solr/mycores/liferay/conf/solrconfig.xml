@@ -34,7 +34,7 @@
 		<queryResultWindowSize>20</queryResultWindowSize>
 		<queryResultMaxDocsCached>200</queryResultMaxDocsCached>
 		<useColdSearcher>false</useColdSearcher>
-		<maxWarmingSearchers>2</maxWarmingSearchers>
+		<maxWarmingSearchers>10</maxWarmingSearchers>
 	</query>
 	<requestDispatcher handleSelect="false">
 		<requestParsers addHttpRequestToContext="false" enableRemoteStreaming="true" formdataUploadLimitInKB="2048" multipartUploadLimitInKB="2048000" />
