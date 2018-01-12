@@ -21,6 +21,8 @@ Here's a list of templates that are currently available:
   * Elasticsearch
   * Elasticsearch Head
   * Solr
+* Services
+  * OpenLDAP
 * Web Servers
   * Apache
   * Nginx
