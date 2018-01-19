@@ -1,0 +1,174 @@
+#!/bin/bash
+#
+# docker template for Shibboleth IDP (Used only for quick testing purposes)
+# host: localhost
+# port: 443 (configured via -p 443:4443)
+#
+# Preconfigured for: Liferay SP + OpenLDAP
+#	Liferay SP
+#		Configured with SSL (port 8443)
+#		Configured with SAML (Service Provider)
+#	OpenLDAP
+#		Can use openldap template in repo (services/openldap)
+# Quick Setup
+#	LDAP
+#		Configured using (./config/conf/ldap.properties)
+#			LDAP: 172.17.0.1:10389 (this should route to your localhost:10389)
+#				Do not need to change this if you are using the openldap template in this repo (services/openldap)
+#		Start LDAP
+#	Shibboleth IDP
+#		Start this container (Restart if you accidently started the container before starting LDAP)
+#		Verify this is working by navigating to:
+#			https://localhost/idp/shibboleth
+#		Troubleshoot using:
+#			dockershibboleth_idp logs -f
+#	Liferay
+#		Configure SSL (enable port 8443)
+#		Configure SAML SP
+#			General tab
+#				SAML Role: Service Provider
+#				EntityId: https://localhost:8443
+#			Service Provider tab
+#				Require Assertion Signature: Checked
+#				Sign Authn Requests: Checked
+#				Sign Metadata: Checked
+#				SSL Required: Checked
+#			Identify Provider Connection tab
+#				name: liferayidp
+#				Entity ID: https://localhost/idp/shibboleth
+#				Metadata:
+#					Upload: ./config/metadata/idp-metadata.xml
+#				Name Identifier Format: Email Address
+#				Attributes:
+#					mail=emailAddress
+#					screenName=screenName
+#					firstName=firstName
+#					lastName=lastName
+#					uid=uuid
+#		Activate SAML SP
+#			General tab
+#				Enabled: Checked
+#		Save SAML SP Metadata
+#			Navigate to: https://localhost:8443/c/portal/saml/metadata
+#			Save to: ./config/metadata/sp-metadata.xml
+#				This should be replacing an existing sp-metadata.xml file
+#	Shibboleth IDP
+#		Restart this container (to use the newly saved sp-metadata.xml)
+#	Liferay
+#		Navigate to https://localhost:8443
+#		Login
+#	Shibboleth should be working!
+# Relevant folders:
+#	./config/conf
+#		Used to store configuration files for shibboleth IDP
+#		Default configurations are configured for:
+#			IDP: https://localhost/idp/shibboleth	(./config/conf/idp.properties)
+#			SP: https://localhost:8443/idp/shibboleth 	(./config/conf/attribute-filter.xml)
+#			LDAP: 172.17.0.1:10389 	(./config/conf/ldap.properties)
+#	./config/credentials
+#		Used to store credentials
+#		Default credentials are configured for localhost
+# 	./config/metadata
+#		Used to store IDP/SP metadata files
+
+#Core Function
+dockershibboleth_idp() {
+	# @description create a docker container for Shibboleth IDP
+	# @param $1 available commands listed in usages
+	# @param $... additional parameters based on inital command used
+	# @output varies, depending on the command used
+
+	local dockerimage="unicon/shibboleth-idp"
+	local containername="ldt_shibboleth_idp"
+	local containercmd=""
+	local containeroptions=(
+		"-v $(dirname ${BASH_SOURCE[0]})/config/conf/attribute-filter.xml:/opt/shibboleth-idp/conf/attribute-filter.xml"
+		"-v $(dirname ${BASH_SOURCE[0]})/config/conf/attribute-resolver.xml:/opt/shibboleth-idp/conf/attribute-resolver.xml"
+		"-v $(dirname ${BASH_SOURCE[0]})/config/conf/idp.properties:/opt/shibboleth-idp/conf/idp.properties"
+		"-v $(dirname ${BASH_SOURCE[0]})/config/conf/ldap.properties:/opt/shibboleth-idp/conf/ldap.properties"
+		"-v $(dirname ${BASH_SOURCE[0]})/config/conf/metadata-providers.xml:/opt/shibboleth-idp/conf/metadata-providers.xml"
+		"-v $(dirname ${BASH_SOURCE[0]})/config/conf/saml-nameid.xml:/opt/shibboleth-idp/conf/saml-nameid.xml"
+		"-v $(dirname ${BASH_SOURCE[0]})/config/credentials:/opt/shibboleth-idp/credentials"
+		"-v $(dirname ${BASH_SOURCE[0]})/config/metadata:/opt/shibboleth-idp/metadata"
+		"-e JETTY_BROWSER_SSL_KEYSTORE_PASSWORD=liferay"
+		"-e JETTY_BACKCHANNEL_SSL_KEYSTORE_PASSWORD=liferay"
+		"-p 443:4443"
+	)
+
+	if [ -n "$1" ]; then
+		case "$1" in
+			'recreate'|'run'|'start')
+				dockercontainer "$1" "${containername}" "${dockerimage}" "${containercmd}" "${containeroptions[@]}";;
+			*)
+				dockercontainer "$1" "${containername}" "${@:2:${#}}";;
+		esac
+	else
+		dockerutil usage_display ${FUNCNAME[0]} "$(dockertemplate template_usage)"
+	fi
+}
+
+#Global Variables
+ldt_repo_dir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
+
+#External Functions
+dockercontainer() {
+	# @description reference dockercontainer to utilize it's functions
+	# @output None
+
+	local scriptpath="${ldt_repo_dir}/docker/dockercontainer"
+
+	if [ -f "${scriptpath}" ]; then
+		${scriptpath} "$@"
+	else
+		echo "Error: Could not load dockercontainer"
+		return 1
+	fi
+}
+
+dockertemplate() {
+	# @description reference dockertemplate to utilize it's functions
+	# @output None
+
+	local scriptpath="${ldt_repo_dir}/docker/dockertemplate"
+
+	if [ -f "${scriptpath}" ]; then
+		${scriptpath} "$@"
+	else
+		echo "Error: Could not load dockertemplate"
+		return 1
+	fi
+}
+
+dockerutil() {
+	# @description reference dockerutil to utilize it's functions
+	# @output None
+
+	local scriptpath="${ldt_repo_dir}/docker/dockerutil"
+
+	if [ -f "${scriptpath}" ]; then
+		${scriptpath} "$@"
+	else
+		echo "Error: Could not load dockerutil"
+		return 1
+	fi
+}
+
+verify_external_functions() {
+	# @description check if external functions can be loaded, or else exit the script
+	# @output None
+
+	if !(dockercontainer > /dev/null); then dockercontainer; exit 1; fi
+	if !(dockertemplate > /dev/null); then dockercontainer; exit 1; fi
+	if !(dockerutil > /dev/null); then dockerutil; exit 1; fi
+}
+
+#Main
+if [ "$0" = "${BASH_SOURCE}" ]; then
+	if [ "${LDT_DEBUG}" == "1" ]; then
+		verify_external_functions
+	fi
+
+	dockershibboleth_idp "${@}"
+
+	exit $?
+fi

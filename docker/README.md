@@ -26,6 +26,7 @@ Here's a list of templates that are currently available:
 * Web Servers
   * Apache
   * Nginx
+  * Shibboleth IDP
 
 # Prerequisites
 
