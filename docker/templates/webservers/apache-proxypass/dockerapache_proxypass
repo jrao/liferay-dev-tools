@@ -1,12 +1,14 @@
 #!/bin/bash
 #
-# docker template for apache
+# docker template for Apache (Proxy Pass)
 # host: localhost
 # port: 443 (configured via -p 443:443)
 # reverse proxy:
-#    modify the following properties in ./conf/extra/httpd-vhosts.conf:
-#        ProxyPass /liferay ajp://172.17.0.1:8009
+#    ProxyPass properties in ./conf/extra/httpd-vhosts.conf:
+#        ProxyPass /liferay ajp://172.17.0.1:8009 
 #        ProxyPassReverse /liferay ajp://172.17.0.1:8009
+#
+#        (by default, 172.17.0.1 should route to your localhost:8009)
 #    For Liferay, add the following portal properties (modify accordingly):
 #        web.server.https.port=443
 #        web.server.protocol=https
@@ -20,14 +22,14 @@
 #    ./conf/dummy-server.key
 
 #Core Function
-dockerapache() {
-	# @description create a docker container for apache
+dockerapache_proxypass() {
+	# @description create a docker container for Apache (Proxy Pass)
 	# @param $1 available commands listed in usages
 	# @param $... additional parameters based on inital command used
 	# @output varies, depending on the command used
 
 	local dockerimage="httpd:2.4.25-alpine"
-	local containername="ldt_apache"
+	local containername="ldt_apache_proxypass"
 	local containercmd=""
 	local containeroptions=(
 		"-v $(dirname ${BASH_SOURCE[0]})/conf/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro"
@@ -111,7 +113,7 @@ if [ "$0" = "${BASH_SOURCE}" ]; then
 		verify_external_functions
 	fi
 	
-	dockerapache "${@}"
+	dockerapache_proxypass "${@}"
 
 	exit $?
 fi

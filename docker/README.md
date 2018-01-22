@@ -24,7 +24,7 @@ Here's a list of templates that are currently available:
 * Services
   * OpenLDAP
 * Web Servers
-  * Apache
+  * Apache (ProxyPass)
   * Nginx
   * Shibboleth IDP
 
