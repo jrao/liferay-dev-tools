@@ -12,30 +12,40 @@ The docker scripts provided were created to help easily setup services for devel
 The scripts were designed to create templates that can be shared and easily customized.
 
 Here's a list of templates that are currently available:
+
 * Databases
-  * DB2 Express
-  * Mysql
-  * PostgreSQL
-  * SQL Server
+    + DB2 Express
+    + Mysql
+    + PostgreSQL
+    + SQL Server
 * Search Indexers
-  * Elasticsearch
-  * Elasticsearch Head
-  * Solr
+    + Elasticsearch
+    + Elasticsearch Head
+    + Solr
 * Services
-  * OpenLDAP
+    + OpenLDAP
 * Web Servers
-  * Apache (ProxyPass)
-  * Nginx
-  * Shibboleth IDP
+    + Apache (ProxyPass)
+    + Nginx
+    + Shibboleth IDP
 
 # Prerequisites
 
-Before using the docker scripts, make sure you have docker installed.  
+Before using the docker scripts, make sure you have docker installed.
 Link: <https://www.docker.com/community-edition#/download>
+
+**Note: For Linux Users**
+
+Docker, by default, requires users to access docker via ```sudo```. But, since these dockerscripts rely on declaring bash functions, they will probably be unaccessible when using ```sudo```. 
+
+One solution is to manage docker as a __non-root__ user.
+
+Docker provides a way to accomplish this: [Manage Docker as a non-root user](https://docs.docker.com/install/linux/linux-postinstall/).
 
 # Initial Setup
 
 1\. Clone this repository
+
 ```
 git clone git@github.com:ericyanlr/liferay-dev-tools.git
 ```
@@ -43,6 +53,7 @@ git clone git@github.com:ericyanlr/liferay-dev-tools.git
 2\. Add this section to .bash_aliases (or the equivalent on whichever shell you're using).
 
 **Note:** making sure to change /path/to/clone/location to wherever you cloned the repository.
+
 ```
 LDT_REPO_PATH=/path/to/clone/location
 
@@ -54,21 +65,25 @@ dockertemplate() {
 # Basic Usage
 
 1\. To start, we can first get a list of available templates by running the command:
+
 ```
 dockertemplate -l
 ```
 
 2\. Let's say we would like to setup a MYSQL server, which is listed as:
+
 ```
 databases/mysql
 ```
 
 3\. We can easily generate an alias to add to our .bash_aliases (or the equivalent on whichever shell you're using) by running the command:
+
 ```
 dockertemplate -a databases/mysql
 ```
 
 4\. Here is a sample output of the generated alias:
+
 ```
 # Copy the follwing to your bash aliases:
 #
@@ -84,25 +99,31 @@ dockermysql() {
 	/Users/liferay/Liferay/development/repos/liferay-dev-tools/docker/templates/databases/mysql/dockermysql "$@"
 }
 ```
+
 5\. With the generated bash alias added, we can easily start a MYSQL docker container by running the command:
+
 ```
 dockermysql start
 ```
 
 6\. MYSQL should now be available on localhost using port 3306.
 
-**Note:** If you already have a MySQL server installed, port 3306 is probably already taken.  
+**Note:** If you already have a MySQL server installed, port 3306 is probably already taken.
+
 The next section will talk about how we can modify the template properties.
 
 # Modifying template properties
 
-When using a template, we may want to modify or add additional properties for the docker container.  
-An easy way to do this would be to modify the file for the template itself.  
+When using a template, we may want to modify or add additional properties for the docker container.
 
-This file can be easily found in the generated alias, in the line: **Config file**  
+An easy way to do this would be to modify the file for the template itself.
+
+This file can be easily found in the generated alias, in the line: **Config file**
+
 Opening the provided file in a text editor, we can find the default properties.
 
 For example, for **databases/mysql**, you should see this snippet in the file:
+
 ```
 local containeroptions=(
 	"-e MYSQL_ROOT_PASSWORD=test"
@@ -111,6 +132,7 @@ local containeroptions=(
 ```
 
 If we wanted to change our MySql container's port to 3307 instead of 3306, we could modify the options to the following:
+
 ```
 local containeroptions=(
 	"-e MYSQL_ROOT_PASSWORD=test"
@@ -118,8 +140,10 @@ local containeroptions=(
 )
 ```
 
-**Note:** If you already started the container before making your changes, you would have to recreate the container.  
+**Note:** If you already started the container before making your changes, you would have to recreate the container.
+
 To easily recreate the container, we can simply run the following command:
+
 ```
 dockermysql recreate
 ```
@@ -131,6 +155,7 @@ Starting the newly modified MySQL container should now make it available on loca
 If you are planning to use a container for a long period of time or would like to make sure your custom properties are not overwritten, you may consider adding a more complete alias of the template you are using.
 
 The first step would be to also include the following essential functions to your .bash_aliases (or the equivalent on whichever shell you're using).
+
 ```
 dockercontainer() {
 	${LDT_REPO_PATH}/docker/dockercontainer "$@"
@@ -145,10 +170,12 @@ dockerutil() {
 }
 ```
 
-The next step would be to open the **Config file** of the template you would like to use.  
+The next step would be to open the **Config file** of the template you would like to use.
+
 Inside the **Config file**, you should see a section called **Core Function**
 
 For example, for **databases/mysql**, you should see this snippet in the file:
+
 ```
 #Core Function
 dockermysql() {
@@ -178,10 +205,12 @@ dockermysql() {
 }
 ```
 
-Copy this function to your .bash_aliases (or the equivalent on whichever shell you're using).  
+Copy this function to your .bash_aliases (or the equivalent on whichever shell you're using).
+
 Your can also rename the function as needed.
 
-With this new function: **dockermysql()**, you can now easily configure it's properties within your .bash_aliases.  
+With this new function: **dockermysql()**, you can now easily configure it's properties within your .bash_aliases.
+
 This means that even if the original template were to change (such as when updating the repo), your configurations would not be affected.
 
 # Creating your own template
@@ -195,6 +224,7 @@ With this blueprint, we can easily create additional templates for services.
 The main portions that we need to focus on are:
 * Renaming the function name: dockertemplateblueprint
 * Filling in the following variables:
+
 ```
 	local dockerimage=""
 	local containername=""
@@ -206,6 +236,7 @@ The main portions that we need to focus on are:
 ```
 
 For example, if we wanted to add a specific version of MySQL, such as MySQL 5.5, we can set the options to:
+
 ```
 	local dockerimage="mysql:5.5"
 	local containername="ldt_mysql55"
