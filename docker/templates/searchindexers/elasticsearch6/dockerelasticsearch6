@@ -1,0 +1,138 @@
+#!/bin/bash
+#
+# docker template for Elasticsearch 6.2.2
+# Hostname: docker-container-ip
+# Port: 9200
+# Transport-Port: 9300
+#
+# Notes:
+#     Removed docker port forwarding to host, use container's IP directly instead
+#         Elasticsearch throws ReceiveTimeoutTransportException if we use localhost:9300 for the transport address
+
+#Core Function
+dockerelasticsearch6() {
+	# @description create a docker container for Elasticsearch 6.2.2
+	# @param $1 available commands listed in usages
+	# @param $... additional parameters based on inital command used
+	# @output varies, depending on the command used
+
+	local dockerimage="docker.elastic.co/elasticsearch/elasticsearch:6.2.2"
+	local containername="ldt_elasticsearch_622"
+	local containercmd=""
+	local containeroptions=(
+		"-e discovery.type=single-node"
+		"-e ELASTIC_PASSWORD=test"
+	)
+
+	local elasticsearch_options=(
+		"cluster.name: LiferayElasticsearchCluster"
+		"network.host: 0.0.0.0"
+		"http.cors.enabled: true"
+		"http.cors.allow-origin: \"*\""
+		"http.cors.allow-headers: \"X-Requested-With, Content-Type, Content-Length, X-User\""
+		"path.repo: \"/usr/share/elasticsearch/data/repo\""
+		"xpack.security.enabled: \"false\""
+	)
+
+	local elasticsearch_options_delimited="$(dockerutil array_to_string_delimited '\\n' "${elasticsearch_options[@]}")"
+
+	if [ -n "$1" ]; then
+		case "$1" in
+			'recreate'|'run'|'start')
+				local init_elastic
+
+				if [ "$1" == 'recreate' ] || (! dockercontainer 'exists' "${containername}"); then
+					init_elastic=1
+				fi
+
+				dockercontainer "$1" "${containername}" "${dockerimage}" "${containercmd}" "${containeroptions[@]}"
+
+				if [ "${init_elastic}" == "1" ]; then
+					echo 'Note: providing some time for elasticsearch to startup before installing plugins + configurations..'
+					sleep 5
+
+					dockercontainer exec "${containername}" ./bin/elasticsearch-plugin install analysis-icu
+					dockercontainer exec "${containername}" ./bin/elasticsearch-plugin install analysis-kuromoji
+					dockercontainer exec "${containername}" ./bin/elasticsearch-plugin install analysis-smartcn
+					dockercontainer exec "${containername}" ./bin/elasticsearch-plugin install analysis-stempel					
+
+					dockercontainer exec "${containername}" bash -c 'awk -v options="'"${elasticsearch_options_delimited//\"/\\\"}"'" '\''BEGIN{print options}'\'' > /usr/share/elasticsearch/config/elasticsearch.yml'
+					dockercontainer exec "${containername}" mkdir /usr/share/elasticsearch/data/repo
+
+					echo 'Note: restarting elasticsearch..'
+					dockerelasticsearch6 'restart'
+
+				fi;;
+			*)
+				dockercontainer "$1" "${containername}" "${@:2:${#}}";;
+		esac
+	else
+		dockerutil usage_display ${FUNCNAME[0]} "$(dockertemplate template_usage)"
+	fi
+}
+
+#Global Variables
+ldt_repo_dir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && git rev-parse --show-toplevel)"
+
+#External Functions
+dockercontainer() {
+	# @description reference dockercontainer to utilize it's functions
+	# @output None
+
+	local scriptpath="${ldt_repo_dir}/docker/dockercontainer"
+
+	if [ -f "${scriptpath}" ]; then
+		${scriptpath} "$@"
+	else
+		echo "Error: Could not load dockercontainer"
+		return 1
+	fi
+}
+
+dockertemplate() {
+	# @description reference dockertemplate to utilize it's functions
+	# @output None
+
+	local scriptpath="${ldt_repo_dir}/docker/dockertemplate"
+
+	if [ -f "${scriptpath}" ]; then
+		${scriptpath} "$@"
+	else
+		echo "Error: Could not load dockertemplate"
+		return 1
+	fi
+}
+
+dockerutil() {
+	# @description reference dockerutil to utilize it's functions
+	# @output None
+
+	local scriptpath="${ldt_repo_dir}/docker/dockerutil"
+
+	if [ -f "${scriptpath}" ]; then
+		${scriptpath} "$@"
+	else
+		echo "Error: Could not load dockerutil"
+		return 1
+	fi
+}
+
+verify_external_functions() {
+	# @description check if external functions can be loaded, or else exit the script
+	# @output None
+
+	if !(dockercontainer > /dev/null); then dockercontainer; exit 1; fi
+	if !(dockertemplate > /dev/null); then dockercontainer; exit 1; fi
+	if !(dockerutil > /dev/null); then dockerutil; exit 1; fi
+}
+
+#Main
+if [ "$0" = "${BASH_SOURCE}" ]; then
+	if [ "${LDT_DEBUG}" == "1" ]; then
+		verify_external_functions
+	fi
+
+	dockerelasticsearch6 "${@}"
+
+	exit $?
+fi
