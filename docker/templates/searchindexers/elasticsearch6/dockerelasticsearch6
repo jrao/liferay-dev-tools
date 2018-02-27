@@ -21,7 +21,6 @@ dockerelasticsearch6() {
 	local containercmd=""
 	local containeroptions=(
 		"-e discovery.type=single-node"
-		"-e ELASTIC_PASSWORD=test"
 	)
 
 	local elasticsearch_options=(
@@ -31,7 +30,6 @@ dockerelasticsearch6() {
 		"http.cors.allow-origin: \"*\""
 		"http.cors.allow-headers: \"X-Requested-With, Content-Type, Content-Length, X-User\""
 		"path.repo: \"/usr/share/elasticsearch/data/repo\""
-		"xpack.security.enabled: \"false\""
 	)
 
 	local elasticsearch_options_delimited="$(dockerutil array_to_string_delimited '\\n' "${elasticsearch_options[@]}")"
