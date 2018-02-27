@@ -46,14 +46,18 @@ dockerelasticsearch() {
 				dockercontainer "$1" "${containername}" "${dockerimage}" "${containercmd}" "${containeroptions[@]}"
 
 				if [ "${init_elastic}" == "1" ]; then
-					dockercontainer exec "${containername}" mkdir /usr/share/elasticsearch/data/repo
+					echo 'Note: providing some time for elasticsearch to startup before installing plugins + configurations..'
+					sleep 5
 
-					dockercontainer exec "${containername}" bash -c 'awk -v options="'"${elasticsearch_options_delimited//\"/\\\"}"'" '\''BEGIN{print options}'\'' > /usr/share/elasticsearch/config/elasticsearch.yml'
-
+					dockercontainer exec "${containername}" ./bin/plugin install analysis-icu
 					dockercontainer exec "${containername}" ./bin/plugin install analysis-kuromoji
 					dockercontainer exec "${containername}" ./bin/plugin install analysis-smartcn
 					dockercontainer exec "${containername}" ./bin/plugin install analysis-stempel
 
+					dockercontainer exec "${containername}" bash -c 'awk -v options="'"${elasticsearch_options_delimited//\"/\\\"}"'" '\''BEGIN{print options}'\'' > /usr/share/elasticsearch/config/elasticsearch.yml'
+					dockercontainer exec "${containername}" mkdir /usr/share/elasticsearch/data/repo
+
+					echo 'Note: restarting elasticsearch..'
 					dockerelasticsearch 'restart'
 
 				fi;;
