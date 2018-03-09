@@ -20,6 +20,7 @@ Here's a list of templates that are currently available:
     + SQL Server
 * Search Indexers
     + Elasticsearch
+    + Elasticsearch6
     + Elasticsearch Head
     + Solr
 * Services
