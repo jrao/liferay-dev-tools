@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# docker template for Elasticsearch 6.2.2
+# docker template for Elasticsearch 6.1.3
 # Hostname: docker-container-ip
 # Port: 9200
 # Transport-Port: 9300
@@ -11,28 +11,25 @@
 
 #Core Function
 dockerelasticsearch6() {
-	# @description create a docker container for Elasticsearch 6.2.2
+	# @description create a docker container for Elasticsearch 6.1.3
 	# @param $1 available commands listed in usages
 	# @param $... additional parameters based on inital command used
 	# @output varies, depending on the command used
 
-	local dockerimage="docker.elastic.co/elasticsearch/elasticsearch:6.2.2"
-	local containername="ldt_elasticsearch_622"
+	local dockerimage="docker.elastic.co/elasticsearch/elasticsearch:6.1.3"
+	local containername="ldt_elasticsearch_6"
 	local containercmd=""
 	local containeroptions=(
 		"-e discovery.type=single-node"
+		"-e cluster.name=LiferayElasticsearchCluster"
+		"-e network.host=0.0.0.0"
+		"-e http.cors.enabled=true"
+		"-e http.cors.allow-origin=*"
+		"-e http.cors.allow-headers=X-Requested-With,Content-Type,Content-Length,X-User"
+		"-e path.repo=/usr/share/elasticsearch/data/repo"
+		"-p 9200:9200"
+		"-p 9300:9300"
 	)
-
-	local elasticsearch_options=(
-		"cluster.name: LiferayElasticsearchCluster"
-		"network.host: 0.0.0.0"
-		"http.cors.enabled: true"
-		"http.cors.allow-origin: \"*\""
-		"http.cors.allow-headers: \"X-Requested-With, Content-Type, Content-Length, X-User\""
-		"path.repo: \"/usr/share/elasticsearch/data/repo\""
-	)
-
-	local elasticsearch_options_delimited="$(dockerutil array_to_string_delimited '\\n' "${elasticsearch_options[@]}")"
 
 	if [ -n "$1" ]; then
 		case "$1" in
@@ -46,16 +43,13 @@ dockerelasticsearch6() {
 				dockercontainer "$1" "${containername}" "${dockerimage}" "${containercmd}" "${containeroptions[@]}"
 
 				if [ "${init_elastic}" == "1" ]; then
-					echo 'Note: providing some time for elasticsearch to startup before installing plugins + configurations..'
+					echo 'Note: providing some time for elasticsearch to startup before installing plugins'
 					sleep 5
 
 					dockercontainer exec "${containername}" ./bin/elasticsearch-plugin install analysis-icu
 					dockercontainer exec "${containername}" ./bin/elasticsearch-plugin install analysis-kuromoji
 					dockercontainer exec "${containername}" ./bin/elasticsearch-plugin install analysis-smartcn
 					dockercontainer exec "${containername}" ./bin/elasticsearch-plugin install analysis-stempel					
-
-					dockercontainer exec "${containername}" bash -c 'awk -v options="'"${elasticsearch_options_delimited//\"/\\\"}"'" '\''BEGIN{print options}'\'' > /usr/share/elasticsearch/config/elasticsearch.yml'
-					dockercontainer exec "${containername}" mkdir /usr/share/elasticsearch/data/repo
 
 					echo 'Note: restarting elasticsearch..'
 					dockerelasticsearch6 'restart'
