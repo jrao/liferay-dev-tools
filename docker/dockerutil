@@ -12,6 +12,8 @@ dockerutil() {
 			array_to_string_delimited "${@:2:${#}}";;
 		'array_sorted_unique')
 			array_sorted_unique "${@:2:${#}}";;
+		'docker_image_exists')
+			docker_image_exists "${@:2:${#}}";;
 		'usage_display')
 			usage_display "${@:2:${#}}";;
 		'usage_display_formatted')
@@ -61,6 +63,22 @@ array_sorted_unique() {
 	else
 		echo "Usage: $(basename $0) ${FUNCNAME[0]} <array>"
 	fi
+}
+
+docker_image_exists() {
+	# @description used to determine whether a docker image exists
+	# @param $1 image name
+	# @output exit code, based on whether the docker image was found or an empty image name was provided
+
+	local image_name="$1"
+
+	if [ -z "${image_name}" ]; then
+		echo "Usage: $(basename $0) ${FUNCNAME[0]} <image-name>"
+	elif $(docker image inspect "${image_name}" > /dev/null 2>&1); then
+		return 0;		
+	fi
+
+	return 1;
 }
 
 usage_display() {
