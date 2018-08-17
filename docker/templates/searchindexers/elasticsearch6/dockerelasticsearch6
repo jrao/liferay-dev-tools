@@ -16,10 +16,17 @@ dockerelasticsearch6() {
 	# @param $... additional parameters based on inital command used
 	# @output varies, depending on the command used
 
-	local dockerimage="docker.elastic.co/elasticsearch/elasticsearch:6.1.3"
-	local containername="ldt_elasticsearch_6"
-	local containercmd=""
-	local containeroptions=(
+	# Dockerfile
+	# FROM docker.elastic.co/elasticsearch/elasticsearch:6.1.3
+	# 
+	# Includes elasticsearch plugins used by Liferay
+	local dockerfile_path="./Dockerfile"
+	local dockerfile_image_name="ldt_elasticsearch_6:latest"
+
+	local docker_image="${dockerfile_image_name}"
+	local container_name="ldt_elasticsearch_6"
+	local container_cmd=""
+	local container_options=(
 		"-e discovery.type=single-node"
 		"-e cluster.name=LiferayElasticsearchCluster"
 		"-e network.host=0.0.0.0"
@@ -34,29 +41,13 @@ dockerelasticsearch6() {
 	if [ -n "$1" ]; then
 		case "$1" in
 			'recreate'|'run'|'start')
-				local init_elastic
-
-				if [ "$1" == 'recreate' ] || (! dockercontainer 'exists' "${containername}"); then
-					init_elastic=1
+				if (! (dockerutil docker_image_exists "${dockerfile_image_name}")); then
+					docker build -t "${dockerfile_image_name}" "$(dirname ${BASH_SOURCE[0]})"
 				fi
 
-				dockercontainer "$1" "${containername}" "${dockerimage}" "${containercmd}" "${containeroptions[@]}"
-
-				if [ "${init_elastic}" == "1" ]; then
-					echo 'Note: providing some time for elasticsearch to startup before installing plugins'
-					sleep 5
-
-					dockercontainer exec "${containername}" ./bin/elasticsearch-plugin install analysis-icu
-					dockercontainer exec "${containername}" ./bin/elasticsearch-plugin install analysis-kuromoji
-					dockercontainer exec "${containername}" ./bin/elasticsearch-plugin install analysis-smartcn
-					dockercontainer exec "${containername}" ./bin/elasticsearch-plugin install analysis-stempel					
-
-					echo 'Note: restarting elasticsearch..'
-					dockerelasticsearch6 'restart'
-
-				fi;;
+				dockercontainer "$1" "${container_name}" "${docker_image}" "${container_cmd}" "${container_options[@]}";;
 			*)
-				dockercontainer "$1" "${containername}" "${@:2:${#}}";;
+				dockercontainer "$1" "${container_name}" "${@:2:${#}}";;
 		esac
 	else
 		dockerutil usage_display ${FUNCNAME[0]} "$(dockertemplate template_usage)"
