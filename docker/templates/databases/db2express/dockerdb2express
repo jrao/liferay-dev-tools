@@ -25,14 +25,29 @@ dockerdb2express() {
 
 	if [ -n "$1" ]; then
 		case "$1" in
-			'dbcreate')
+			'db_create')
 				if [ -n "$2" ] ; then
 					dockercontainer "exec" ${containername} su -c "db2 CREATE DB $2 using codeset UTF-8 territory us PAGESIZE 32768" - db2inst1
 					return
 				fi;;
-			'dbdrop')
+			'db_drop')
 				if [ -n "$2" ] ; then
 					dockercontainer "exec" ${containername} su -c "db2 DROP DB $2" - db2inst1
+					return
+				fi;;
+			'db_get_cfg')
+				if [ -n "$2" ] ; then
+					dockercontainer "exec" ${containername} su -c "db2 GET DB CFG FOR $2" - db2inst1
+					return
+				fi;;
+			'db_update_cfg')
+				if [ -n "$2" ] && [ -n "$3" ] && [ -n "$4" ]; then
+					dockercontainer "exec" ${containername} su -c "db2 UPDATE DB CFG FOR $2 using $3 $4" - db2inst1
+					return
+				fi;;
+			'exec')
+				if [ -n "$2" ] ; then
+					dockercontainer "exec" ${containername} su -c "${@:2:${#}}" - db2inst1
 					return
 				fi;;
 			'recreate'|'run'|'start')
@@ -55,7 +70,8 @@ usage() {
 	
 	local usage_arr=(
 		"$(dockertemplate template_usage)"
-		"Usage: \${FUNCNAME[0]} (dbcreate|dbdrop) <database-name>"
+		"Usage: \${FUNCNAME[0]} (db_create|db_drop|db_get_cfg) <database-name>"
+		"Usage: \${FUNCNAME[0]} db_update_cfg <database-name> <param-name> <param-value>"
 	)
 	
 	dockerutil usage_display_formatted "${usage_arr[@]}"
