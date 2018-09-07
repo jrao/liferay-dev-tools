@@ -3,7 +3,7 @@
 # docker template for Solr
 # host: localhost
 # port: 8983 (configured via -p 8983:8983)
-# directory: ./mycores/liferay (configured via -v ${scriptpath}/mycores/liferay:/myconfig)
+# directory: ./mycores/liferay (configured via -v ${scriptpath_escaped}/mycores/liferay:/myconfig)
 #   can be used for configuring Solr
 
 #Core Function
@@ -13,13 +13,13 @@ dockersolr() {
 	# @param $... additional parameters based on inital command used
 	# @output varies, depending on the command used
 
-	local scriptpath="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
+	local scriptpath_escaped="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd | awk '{gsub(/ /,"\\ ");print}')"
 	
 	local dockerimage="solr:5.5.4-alpine"
 	local containername="ldt_solr"
 	local containercmd="solr-precreate liferay /myconfig"
 	local containeroptions=(
-		"-v ${scriptpath}/mycores/liferay:/myconfig"
+		"-v ${scriptpath_escaped}/mycores/liferay:/myconfig"
 		"-p 8983:8983"
 	)
 
@@ -46,7 +46,7 @@ dockercontainer() {
 	local scriptpath="${ldt_repo_dir}/docker/dockercontainer"
 
 	if [ -f "${scriptpath}" ]; then
-		${scriptpath} "$@"
+		"${scriptpath}" "$@"
 	else
 		echo "Error: Could not load dockercontainer"
 		return 1
@@ -60,7 +60,7 @@ dockertemplate() {
 	local scriptpath="${ldt_repo_dir}/docker/dockertemplate"
 
 	if [ -f "${scriptpath}" ]; then
-		${scriptpath} "$@"
+		"${scriptpath}" "$@"
 	else
 		echo "Error: Could not load dockertemplate"
 		return 1
@@ -74,7 +74,7 @@ dockerutil() {
 	local scriptpath="${ldt_repo_dir}/docker/dockerutil"
 
 	if [ -f "${scriptpath}" ]; then
-		${scriptpath} "$@"
+		"${scriptpath}" "$@"
 	else
 		echo "Error: Could not load dockerutil"
 		return 1

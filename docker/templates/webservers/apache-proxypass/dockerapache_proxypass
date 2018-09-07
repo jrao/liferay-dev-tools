@@ -28,17 +28,17 @@ dockerapache_proxypass() {
 	# @param $... additional parameters based on inital command used
 	# @output varies, depending on the command used
 
-	local scriptpath="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
+	local scriptpath_escaped="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd | awk '{gsub(/ /,"\\ ");print}')"
 
 	local dockerimage="httpd:2.4.25-alpine"
 	local containername="ldt_apache_proxypass"
 	local containercmd=""
 	local containeroptions=(
-		"-v ${scriptpath}/conf/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro"
-		"-v ${scriptpath}/conf/extra/httpd-vhosts.conf:/usr/local/apache2/conf/extra/httpd-vhosts.conf:ro"
-		"-v ${scriptpath}/conf/extra/httpd-ssl.conf:/usr/local/apache2/conf/extra/httpd-ssl.conf:ro"
-		"-v ${scriptpath}/conf/dummy-server.crt:/usr/local/apache2/conf/dummy-server.crt:ro"
-		"-v ${scriptpath}/conf/dummy-server.key:/usr/local/apache2/conf/dummy-server.key:ro"
+		"-v ${scriptpath_escaped}/conf/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro"
+		"-v ${scriptpath_escaped}/conf/extra/httpd-vhosts.conf:/usr/local/apache2/conf/extra/httpd-vhosts.conf:ro"
+		"-v ${scriptpath_escaped}/conf/extra/httpd-ssl.conf:/usr/local/apache2/conf/extra/httpd-ssl.conf:ro"
+		"-v ${scriptpath_escaped}/conf/dummy-server.crt:/usr/local/apache2/conf/dummy-server.crt:ro"
+		"-v ${scriptpath_escaped}/conf/dummy-server.key:/usr/local/apache2/conf/dummy-server.key:ro"
 		"-p 443:443"
 	)
 
@@ -65,7 +65,7 @@ dockercontainer() {
 	local scriptpath="${ldt_repo_dir}/docker/dockercontainer"
 
 	if [ -f "${scriptpath}" ]; then
-		${scriptpath} "$@"
+		"${scriptpath}" "$@"
 	else
 		echo "Error: Could not load dockercontainer"
 		return 1
@@ -79,7 +79,7 @@ dockertemplate() {
 	local scriptpath="${ldt_repo_dir}/docker/dockertemplate"
 
 	if [ -f "${scriptpath}" ]; then
-		${scriptpath} "$@"
+		"${scriptpath}" "$@"
 	else
 		echo "Error: Could not load dockertemplate"
 		return 1
@@ -93,7 +93,7 @@ dockerutil() {
 	local scriptpath="${ldt_repo_dir}/docker/dockerutil"
 
 	if [ -f "${scriptpath}" ]; then
-		${scriptpath} "$@"
+		"${scriptpath}" "$@"
 	else
 		echo "Error: Could not load dockerutil"
 		return 1

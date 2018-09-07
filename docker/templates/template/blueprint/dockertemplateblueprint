@@ -40,7 +40,7 @@ dockercontainer() {
 	local scriptpath="${ldt_repo_dir}/docker/dockercontainer"
 
 	if [ -f "${scriptpath}" ]; then
-		${scriptpath} "$@"
+		"${scriptpath}" "$@"
 	else
 		echo "Error: Could not load dockercontainer"
 		return 1
@@ -54,7 +54,7 @@ dockertemplate() {
 	local scriptpath="${ldt_repo_dir}/docker/dockertemplate"
 
 	if [ -f "${scriptpath}" ]; then
-		${scriptpath} "$@"
+		"${scriptpath}" "$@"
 	else
 		echo "Error: Could not load dockertemplate"
 		return 1
@@ -68,7 +68,7 @@ dockerutil() {
 	local scriptpath="${ldt_repo_dir}/docker/dockerutil"
 
 	if [ -f "${scriptpath}" ]; then
-		${scriptpath} "$@"
+		"${scriptpath}" "$@"
 	else
 		echo "Error: Could not load dockerutil"
 		return 1

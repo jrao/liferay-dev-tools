@@ -78,20 +78,20 @@ dockershibboleth_idp() {
 	# @param $... additional parameters based on inital command used
 	# @output varies, depending on the command used
 
-	local scriptpath="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
+	local scriptpath_escaped="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd | awk '{gsub(/ /,"\\ ");print}')"
 
 	local dockerimage="unicon/shibboleth-idp"
 	local containername="ldt_shibboleth_idp"
 	local containercmd=""
 	local containeroptions=(
-		"-v ${scriptpath}/config/conf/attribute-filter.xml:/opt/shibboleth-idp/conf/attribute-filter.xml"
-		"-v ${scriptpath}/config/conf/attribute-resolver.xml:/opt/shibboleth-idp/conf/attribute-resolver.xml"
-		"-v ${scriptpath}/config/conf/idp.properties:/opt/shibboleth-idp/conf/idp.properties"
-		"-v ${scriptpath}/config/conf/ldap.properties:/opt/shibboleth-idp/conf/ldap.properties"
-		"-v ${scriptpath}/config/conf/metadata-providers.xml:/opt/shibboleth-idp/conf/metadata-providers.xml"
-		"-v ${scriptpath}/config/conf/saml-nameid.xml:/opt/shibboleth-idp/conf/saml-nameid.xml"
-		"-v ${scriptpath}/config/credentials:/opt/shibboleth-idp/credentials"
-		"-v ${scriptpath}/config/metadata:/opt/shibboleth-idp/metadata"
+		"-v ${scriptpath_escaped}/config/conf/attribute-filter.xml:/opt/shibboleth-idp/conf/attribute-filter.xml"
+		"-v ${scriptpath_escaped}/config/conf/attribute-resolver.xml:/opt/shibboleth-idp/conf/attribute-resolver.xml"
+		"-v ${scriptpath_escaped}/config/conf/idp.properties:/opt/shibboleth-idp/conf/idp.properties"
+		"-v ${scriptpath_escaped}/config/conf/ldap.properties:/opt/shibboleth-idp/conf/ldap.properties"
+		"-v ${scriptpath_escaped}/config/conf/metadata-providers.xml:/opt/shibboleth-idp/conf/metadata-providers.xml"
+		"-v ${scriptpath_escaped}/config/conf/saml-nameid.xml:/opt/shibboleth-idp/conf/saml-nameid.xml"
+		"-v ${scriptpath_escaped}/config/credentials:/opt/shibboleth-idp/credentials"
+		"-v ${scriptpath_escaped}/config/metadata:/opt/shibboleth-idp/metadata"
 		"-e JETTY_BROWSER_SSL_KEYSTORE_PASSWORD=liferay"
 		"-e JETTY_BACKCHANNEL_SSL_KEYSTORE_PASSWORD=liferay"
 		"-p 443:4443"
@@ -120,7 +120,7 @@ dockercontainer() {
 	local scriptpath="${ldt_repo_dir}/docker/dockercontainer"
 
 	if [ -f "${scriptpath}" ]; then
-		${scriptpath} "$@"
+		"${scriptpath}" "$@"
 	else
 		echo "Error: Could not load dockercontainer"
 		return 1
@@ -134,7 +134,7 @@ dockertemplate() {
 	local scriptpath="${ldt_repo_dir}/docker/dockertemplate"
 
 	if [ -f "${scriptpath}" ]; then
-		${scriptpath} "$@"
+		"${scriptpath}" "$@"
 	else
 		echo "Error: Could not load dockertemplate"
 		return 1
@@ -148,7 +148,7 @@ dockerutil() {
 	local scriptpath="${ldt_repo_dir}/docker/dockerutil"
 
 	if [ -f "${scriptpath}" ]; then
-		${scriptpath} "$@"
+		"${scriptpath}" "$@"
 	else
 		echo "Error: Could not load dockerutil"
 		return 1

@@ -102,7 +102,7 @@ dockerutil() {
 	local scriptpath="${ldt_repo_dir}/docker/dockerutil"
 
 	if [ -f "${scriptpath}" ]; then
-		${scriptpath} "$@"
+		"${scriptpath}" "$@"
 	else
 		echo "Error: Could not load dockerutil"
 		return 1

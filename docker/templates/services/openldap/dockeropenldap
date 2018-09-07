@@ -21,13 +21,13 @@ dockeropenldap() {
 	# @param $... additional parameters based on inital command used
 	# @output varies, depending on the command used
 
-	local scriptpath="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
+	local scriptpath_escaped="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd | awk '{gsub(/ /,"\\ ");print}')"
 
 	local dockerimage="dinkel/openldap"
 	local containername="ldt_openldap"
 	local containercmd=""
 	local containeroptions=(
-		"-v ${scriptpath}/prepopulate:/etc/ldap.dist/prepopulate"
+		"-v ${scriptpath_escaped}/prepopulate:/etc/ldap.dist/prepopulate"
 		"-e SLAPD_PASSWORD=admin"
 		"-e SLAPD_CONFIG_PASSWORD=admin"
 		"-e SLAPD_DOMAIN=example.org"
@@ -59,7 +59,7 @@ dockercontainer() {
 	local scriptpath="${ldt_repo_dir}/docker/dockercontainer"
 
 	if [ -f "${scriptpath}" ]; then
-		${scriptpath} "$@"
+		"${scriptpath}" "$@"
 	else
 		echo "Error: Could not load dockercontainer"
 		return 1
@@ -73,7 +73,7 @@ dockertemplate() {
 	local scriptpath="${ldt_repo_dir}/docker/dockertemplate"
 
 	if [ -f "${scriptpath}" ]; then
-		${scriptpath} "$@"
+		"${scriptpath}" "$@"
 	else
 		echo "Error: Could not load dockertemplate"
 		return 1
@@ -87,7 +87,7 @@ dockerutil() {
 	local scriptpath="${ldt_repo_dir}/docker/dockerutil"
 
 	if [ -f "${scriptpath}" ]; then
-		${scriptpath} "$@"
+		"${scriptpath}" "$@"
 	else
 		echo "Error: Could not load dockerutil"
 		return 1
