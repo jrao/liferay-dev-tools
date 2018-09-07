@@ -21,11 +21,13 @@ dockeropenldap() {
 	# @param $... additional parameters based on inital command used
 	# @output varies, depending on the command used
 
+	local scriptpath="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
+
 	local dockerimage="dinkel/openldap"
 	local containername="ldt_openldap"
 	local containercmd=""
 	local containeroptions=(
-		"-v $(dirname ${BASH_SOURCE[0]})/prepopulate:/etc/ldap.dist/prepopulate"
+		"-v ${scriptpath}/prepopulate:/etc/ldap.dist/prepopulate"
 		"-e SLAPD_PASSWORD=admin"
 		"-e SLAPD_CONFIG_PASSWORD=admin"
 		"-e SLAPD_DOMAIN=example.org"

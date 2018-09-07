@@ -78,18 +78,20 @@ dockershibboleth_idp() {
 	# @param $... additional parameters based on inital command used
 	# @output varies, depending on the command used
 
+	local scriptpath="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
+
 	local dockerimage="unicon/shibboleth-idp"
 	local containername="ldt_shibboleth_idp"
 	local containercmd=""
 	local containeroptions=(
-		"-v $(dirname ${BASH_SOURCE[0]})/config/conf/attribute-filter.xml:/opt/shibboleth-idp/conf/attribute-filter.xml"
-		"-v $(dirname ${BASH_SOURCE[0]})/config/conf/attribute-resolver.xml:/opt/shibboleth-idp/conf/attribute-resolver.xml"
-		"-v $(dirname ${BASH_SOURCE[0]})/config/conf/idp.properties:/opt/shibboleth-idp/conf/idp.properties"
-		"-v $(dirname ${BASH_SOURCE[0]})/config/conf/ldap.properties:/opt/shibboleth-idp/conf/ldap.properties"
-		"-v $(dirname ${BASH_SOURCE[0]})/config/conf/metadata-providers.xml:/opt/shibboleth-idp/conf/metadata-providers.xml"
-		"-v $(dirname ${BASH_SOURCE[0]})/config/conf/saml-nameid.xml:/opt/shibboleth-idp/conf/saml-nameid.xml"
-		"-v $(dirname ${BASH_SOURCE[0]})/config/credentials:/opt/shibboleth-idp/credentials"
-		"-v $(dirname ${BASH_SOURCE[0]})/config/metadata:/opt/shibboleth-idp/metadata"
+		"-v ${scriptpath}/config/conf/attribute-filter.xml:/opt/shibboleth-idp/conf/attribute-filter.xml"
+		"-v ${scriptpath}/config/conf/attribute-resolver.xml:/opt/shibboleth-idp/conf/attribute-resolver.xml"
+		"-v ${scriptpath}/config/conf/idp.properties:/opt/shibboleth-idp/conf/idp.properties"
+		"-v ${scriptpath}/config/conf/ldap.properties:/opt/shibboleth-idp/conf/ldap.properties"
+		"-v ${scriptpath}/config/conf/metadata-providers.xml:/opt/shibboleth-idp/conf/metadata-providers.xml"
+		"-v ${scriptpath}/config/conf/saml-nameid.xml:/opt/shibboleth-idp/conf/saml-nameid.xml"
+		"-v ${scriptpath}/config/credentials:/opt/shibboleth-idp/credentials"
+		"-v ${scriptpath}/config/metadata:/opt/shibboleth-idp/metadata"
 		"-e JETTY_BROWSER_SSL_KEYSTORE_PASSWORD=liferay"
 		"-e JETTY_BACKCHANNEL_SSL_KEYSTORE_PASSWORD=liferay"
 		"-p 443:4443"

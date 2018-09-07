@@ -3,7 +3,7 @@
 # docker template for nginx
 # host: localhost
 # port: 8081 (configured via -p 8081:80)
-# directory: ./html (configured via -v $(dirname ${BASH_SOURCE[0]})/html:/usr/share/nginx/html:ro)
+# directory: ./html (configured via -v ${scriptpath}/html:/usr/share/nginx/html:ro)
 #   can be used for adding custom web files
 
 #Core Function
@@ -13,11 +13,13 @@ dockernginx() {
 	# @param $... additional parameters based on inital command used
 	# @output varies, depending on the command used
 
+	local scriptpath="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
+
 	local dockerimage="nginx:1.13.6-alpine"
 	local containername="ldt_nginx"
 	local containercmd=""
 	local containeroptions=(
-		"-v $(dirname ${BASH_SOURCE[0]})/html:/usr/share/nginx/html:ro"
+		"-v ${scriptpath}/html:/usr/share/nginx/html:ro"
 		"-p 8081:80"
 	)
 

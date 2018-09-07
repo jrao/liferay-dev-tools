@@ -3,7 +3,7 @@
 # docker template for Solr
 # host: localhost
 # port: 8983 (configured via -p 8983:8983)
-# directory: ./mycores/liferay (configured via -v $(dirname ${BASH_SOURCE[0]})/mycores/liferay:/myconfig)
+# directory: ./mycores/liferay (configured via -v ${scriptpath}/mycores/liferay:/myconfig)
 #   can be used for configuring Solr
 
 #Core Function
@@ -13,11 +13,13 @@ dockersolr() {
 	# @param $... additional parameters based on inital command used
 	# @output varies, depending on the command used
 
+	local scriptpath="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
+	
 	local dockerimage="solr:5.5.4-alpine"
 	local containername="ldt_solr"
 	local containercmd="solr-precreate liferay /myconfig"
 	local containeroptions=(
-		"-v $(dirname ${BASH_SOURCE[0]})/mycores/liferay:/myconfig"
+		"-v ${scriptpath}/mycores/liferay:/myconfig"
 		"-p 8983:8983"
 	)
 

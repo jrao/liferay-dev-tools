@@ -28,15 +28,17 @@ dockerapache_proxypass() {
 	# @param $... additional parameters based on inital command used
 	# @output varies, depending on the command used
 
+	local scriptpath="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
+
 	local dockerimage="httpd:2.4.25-alpine"
 	local containername="ldt_apache_proxypass"
 	local containercmd=""
 	local containeroptions=(
-		"-v $(dirname ${BASH_SOURCE[0]})/conf/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro"
-		"-v $(dirname ${BASH_SOURCE[0]})/conf/extra/httpd-vhosts.conf:/usr/local/apache2/conf/extra/httpd-vhosts.conf:ro"
-		"-v $(dirname ${BASH_SOURCE[0]})/conf/extra/httpd-ssl.conf:/usr/local/apache2/conf/extra/httpd-ssl.conf:ro"
-		"-v $(dirname ${BASH_SOURCE[0]})/conf/dummy-server.crt:/usr/local/apache2/conf/dummy-server.crt:ro"
-		"-v $(dirname ${BASH_SOURCE[0]})/conf/dummy-server.key:/usr/local/apache2/conf/dummy-server.key:ro"
+		"-v ${scriptpath}/conf/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro"
+		"-v ${scriptpath}/conf/extra/httpd-vhosts.conf:/usr/local/apache2/conf/extra/httpd-vhosts.conf:ro"
+		"-v ${scriptpath}/conf/extra/httpd-ssl.conf:/usr/local/apache2/conf/extra/httpd-ssl.conf:ro"
+		"-v ${scriptpath}/conf/dummy-server.crt:/usr/local/apache2/conf/dummy-server.crt:ro"
+		"-v ${scriptpath}/conf/dummy-server.key:/usr/local/apache2/conf/dummy-server.key:ro"
 		"-p 443:443"
 	)
 

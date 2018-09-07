@@ -16,6 +16,8 @@ dockerelasticsearch6() {
 	# @param $... additional parameters based on inital command used
 	# @output varies, depending on the command used
 
+	local scriptpath="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
+
 	# Dockerfile
 	# FROM docker.elastic.co/elasticsearch/elasticsearch:6.1.3
 	# 
@@ -42,7 +44,7 @@ dockerelasticsearch6() {
 		case "$1" in
 			'recreate'|'run'|'start')
 				if (! (dockerutil docker_image_exists "${dockerfile_image_name}")); then
-					docker build -t "${dockerfile_image_name}" "$(dirname ${BASH_SOURCE[0]})"
+					docker build -t "${dockerfile_image_name}" "${scriptpath}"
 				fi
 
 				dockercontainer "$1" "${container_name}" "${docker_image}" "${container_cmd}" "${container_options[@]}";;
