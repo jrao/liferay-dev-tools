@@ -59,7 +59,7 @@ git clone git@github.com:ericyanlr/liferay-dev-tools.git
 LDT_REPO_PATH=/path/to/clone/location
 
 dockertemplate() {
-	${LDT_REPO_PATH}/docker/dockertemplate "$@"
+	"${LDT_REPO_PATH}"/docker/dockertemplate "$@"
 }
 ```
 
@@ -159,15 +159,15 @@ The first step would be to also include the following essential functions to you
 
 ```
 dockercontainer() {
-	${LDT_REPO_PATH}/docker/dockercontainer "$@"
+	"${LDT_REPO_PATH}"/docker/dockercontainer "$@"
 }
 
 dockertemplate() {
-	${LDT_REPO_PATH}/docker/dockertemplate "$@"
+	"${LDT_REPO_PATH}"/docker/dockertemplate "$@"
 }
 
 dockerutil() {
-	${LDT_REPO_PATH}/docker/dockerutil "$@"
+	"${LDT_REPO_PATH}"/docker/dockerutil "$@"
 }
 ```
 
