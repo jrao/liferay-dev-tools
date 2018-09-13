@@ -68,7 +68,7 @@ templates_getfilepath() {
 	
 	pushd "${templatedir}" > /dev/null
 	
-	local templatepaths=($(find . -mindepth 3 -type f -name "docker[a-zA-Z0-9]*"))
+	local templatepaths=($(find . -mindepth 3 -type f -name "docker[a-zA-Z0-9]*" | sort))
 
 	popd > /dev/null
 
