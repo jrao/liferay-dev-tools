@@ -12,7 +12,16 @@ dockerelasticsearch() {
 	# @param $... additional parameters based on inital command used
 	# @output varies, depending on the command used
 
-	local dockerimage="elasticsearch:2.4.4"
+	local scriptpath="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
+
+	# Dockerfile
+	# FROM elasticsearch:2.4.4
+	# 
+	# Includes elasticsearch plugins used by Liferay
+	local dockerfile_path="./Dockerfile"
+	local dockerfile_image_name="ldt_elasticsearch:latest"
+
+	local docker_image="${dockerfile_image_name}"
 	local containername="ldt_elasticsearch_244"
 	local containercmd=""
 	local containeroptions=(
@@ -43,16 +52,14 @@ dockerelasticsearch() {
 					init_elastic=1
 				fi
 
-				dockercontainer "$1" "${containername}" "${dockerimage}" "${containercmd}" "${containeroptions[@]}"
+				if (! (dockerutil docker_image_exists "${dockerfile_image_name}")); then
+					docker build -t "${dockerfile_image_name}" "${scriptpath}"
+				fi
 
-				if [ "${init_elastic}" == "1" ]; then
-					echo 'Note: providing some time for elasticsearch to startup before installing plugins + configurations..'
-					sleep 5
+				dockercontainer "$1" "${containername}" "${docker_image}" "${containercmd}" "${containeroptions[@]}"
 
-					dockercontainer exec "${containername}" ./bin/plugin install analysis-icu
-					dockercontainer exec "${containername}" ./bin/plugin install analysis-kuromoji
-					dockercontainer exec "${containername}" ./bin/plugin install analysis-smartcn
-					dockercontainer exec "${containername}" ./bin/plugin install analysis-stempel
+				if (dockercontainer 'exists' "${containername}") && [ "${init_elastic}" == "1" ]; then
+					echo 'Note: updating elasticsearch.yml configuration options..'
 
 					dockercontainer exec "${containername}" bash -c 'awk -v options="'"${elasticsearch_options_delimited//\"/\\\"}"'" '\''BEGIN{print options}'\'' > /usr/share/elasticsearch/config/elasticsearch.yml'
 					dockercontainer exec "${containername}" mkdir /usr/share/elasticsearch/data/repo
