@@ -1,13 +1,9 @@
 #!/bin/bash
 #
 # docker template for Elasticsearch 2.4.4
-# Hostname: docker-container-ip
+# Hostname: localhost
 # Port: 9200
 # Transport-Port: 9300
-#
-# Notes:
-#     Removed docker port forwarding to host, use container's IP directly instead
-#         Elasticsearch throws ReceiveTimeoutTransportException if we use localhost:9300 for the transport address
 
 #Core Function
 dockerelasticsearch() {
@@ -19,11 +15,15 @@ dockerelasticsearch() {
 	local dockerimage="elasticsearch:2.4.4"
 	local containername="ldt_elasticsearch_244"
 	local containercmd=""
-	local containeroptions=()
+	local containeroptions=(
+		"-p 9200:9200"
+		"-p 9300:9300"
+	)
 
 	local elasticsearch_options=(
 		"cluster.name: LiferayElasticsearchCluster"
-		"network.host: _site_"
+		"network.host: _local_"
+		"network.bind_host: 0.0.0.0"
 		"http.cors.enabled: true"
 		"http.cors.allow-origin: \"*\""
 		"http.cors.allow-headers: \"X-Requested-With, Content-Type, Content-Length, X-User\""
