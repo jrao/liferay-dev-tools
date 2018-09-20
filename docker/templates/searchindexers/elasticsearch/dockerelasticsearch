@@ -4,6 +4,32 @@
 # Hostname: localhost
 # Port: 9200
 # Transport-Port: 9300
+#
+# Shield Plugin
+#    The shield plugin is disabled by default.
+#
+#    A default admin user is created:
+#        username: liferay
+#        password: liferay
+#
+#    A default SSL certificate is also used by shield: config/shield/keystore.jks
+#        Note: The default SSL certificate is a dummy certificate for the dns name: localhost
+#
+#    To enable the shield plugin, run:
+#        dockerelasticsearch enable_shield
+#
+#    To disable the shield plugin, run:
+#        dockerelasticsearch disable_shield
+#
+# Liferay Elasticsearch Shield Adapter
+#    Username: liferay
+#    Password: liferay
+#    
+#    SSL Keystore Path: Use the default keystore provided in this script's directory: config/shield/keystore.jks
+#    SSL Keystore Password: liferay
+#
+#    Requires Authentication: true
+#    Requires SSL: true
 
 #Core Function
 dockerelasticsearch() {
@@ -13,11 +39,13 @@ dockerelasticsearch() {
 	# @output varies, depending on the command used
 
 	local scriptpath="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
+	local scriptpath_escaped="$(echo "${scriptpath}" | awk '{gsub(/ /,"\\ ");print}')"
 
 	# Dockerfile
 	# FROM elasticsearch:2.4.4
 	# 
 	# Includes elasticsearch plugins used by Liferay
+	# Includes shield plugin
 	local dockerfile_path="./Dockerfile"
 	local dockerfile_image_name="ldt_elasticsearch:latest"
 
@@ -25,6 +53,8 @@ dockerelasticsearch() {
 	local containername="ldt_elasticsearch_244"
 	local containercmd=""
 	local containeroptions=(
+		"-v ${scriptpath_escaped}/config/shield/roles.yml:/usr/share/elasticsearch/config/shield/roles.yml:ro"
+		"-v ${scriptpath_escaped}/config/shield/keystore.jks:/usr/share/elasticsearch/config/shield/keystore.jks:ro"
 		"-p 9200:9200"
 		"-p 9300:9300"
 	)
@@ -41,10 +71,55 @@ dockerelasticsearch() {
 		"path.repo: \"/usr/share/elasticsearch/data/repo\""
 	)
 
-	local elasticsearch_options_delimited="$(dockerutil array_to_string_delimited '\\n' "${elasticsearch_options[@]}")"
+	local elasticsearch_shield_options=(
+		"shield.enabled: false"
+		"shield.ssl.keystore.path: \"/usr/share/elasticsearch/config/shield/keystore.jks\""
+		"shield.ssl.keystore.password: \"liferay\""
+		"shield.http.ssl: true"
+		"shield.transport.ssl: true"
+	)
+
+	local elasticsearch_shield_username="liferay"
+	local elasticsearch_shield_password="liferay"
 
 	if [ -n "$1" ]; then
 		case "$1" in
+			'enable_shield')
+				if (dockercontainer 'is_running' "${containername}"); then
+					if (! dockerelasticsearch 'is_shield_enabled'); then
+						echo "INFO: enabling shield.."
+						dockercontainer exec "${containername}" bash -c "sed -i 's/shield.enabled: false/shield.enabled: true/' config/elasticsearch.yml"
+						
+						echo 'INFO: restarting elasticsearch..'
+						dockerelasticsearch 'restart'
+					else
+						echo "INFO: shield is already enabled."
+					fi
+				else
+					echo "ERROR: Elasticsearch container is not running."
+				fi;;
+			'disable_shield')
+				if (dockercontainer 'is_running' "${containername}"); then
+					if (dockerelasticsearch 'is_shield_enabled'); then
+						echo "INFO: disabling shield.."
+						dockercontainer exec "${containername}" bash -c "sed -i 's/shield.enabled: true/shield.enabled: false/' config/elasticsearch.yml"
+						
+						echo 'INFO: restarting elasticsearch..'
+						dockerelasticsearch 'restart'
+					else
+						echo "INFO: shield is already disabled."
+					fi
+				else
+					echo "ERROR: elasticsearch container is not running."
+				fi;;
+			'is_shield_enabled')
+				if (dockercontainer 'is_running' "${containername}"); then
+					if [ $(dockercontainer exec "${containername}" grep -e "shield.enabled: true" config/elasticsearch.yml | wc -l) -eq 1 ]; then
+						return 0
+					fi
+				fi
+
+				return 1;;
 			'recreate'|'run'|'start')
 				local init_elastic
 
@@ -59,12 +134,25 @@ dockerelasticsearch() {
 				dockercontainer "$1" "${containername}" "${docker_image}" "${containercmd}" "${containeroptions[@]}"
 
 				if (dockercontainer 'exists' "${containername}") && [ "${init_elastic}" == "1" ]; then
-					echo 'Note: updating elasticsearch.yml configuration options..'
+					echo 'INFO: setting up intial configuration..'
 
-					dockercontainer exec "${containername}" bash -c 'awk -v options="'"${elasticsearch_options_delimited//\"/\\\"}"'" '\''BEGIN{print options}'\'' > /usr/share/elasticsearch/config/elasticsearch.yml'
+					local configuration_options=(
+						"${elasticsearch_options[@]}"
+						"${elasticsearch_shield_options[@]}"
+					)
+
+					local configuration_options_delimited"=$(dockerutil array_to_string_delimited '\\n' "${configuration_options[@]}")"
+
+					dockercontainer exec "${containername}" bash -c 'awk -v options="'"${configuration_options_delimited//\"/\\\"}"'" '\''BEGIN{print options}'\'' > /usr/share/elasticsearch/config/elasticsearch.yml'
 					dockercontainer exec "${containername}" mkdir /usr/share/elasticsearch/data/repo
 
-					echo 'Note: restarting elasticsearch..'
+					# Add shield user
+					dockercontainer exec "${containername}" bin/shield/esusers useradd "${elasticsearch_shield_username}" -p "${elasticsearch_shield_password}" -r admin --path.conf=/usr/share/elasticsearch/config/
+
+					# Handle shield folder permissions
+					dockercontainer exec "${containername}" bash -c 'chown -R elasticsearch:elasticsearch /usr/share/elasticsearch/config/shield > /dev/null 2>&1'
+
+					echo 'INFO: restarting elasticsearch..'
 					dockerelasticsearch 'restart'
 
 				fi;;
@@ -73,6 +161,8 @@ dockerelasticsearch() {
 		esac
 	else
 		dockerutil usage_display ${FUNCNAME[0]} "$(dockertemplate template_usage)"
+		echo "Usage: ${FUNCNAME[0]} enable_shield"
+		echo "Usage: ${FUNCNAME[0]} disable_shield"
 	fi
 }
 
@@ -89,7 +179,7 @@ dockercontainer() {
 	if [ -f "${scriptpath}" ]; then
 		"${scriptpath}" "$@"
 	else
-		echo "Error: Could not load dockercontainer"
+		echo "ERROR: Could not load dockercontainer"
 		return 1
 	fi
 }
@@ -103,7 +193,7 @@ dockertemplate() {
 	if [ -f "${scriptpath}" ]; then
 		"${scriptpath}" "$@"
 	else
-		echo "Error: Could not load dockertemplate"
+		echo "ERROR: Could not load dockertemplate"
 		return 1
 	fi
 }
@@ -117,7 +207,7 @@ dockerutil() {
 	if [ -f "${scriptpath}" ]; then
 		"${scriptpath}" "$@"
 	else
-		echo "Error: Could not load dockerutil"
+		echo "ERROR: Could not load dockerutil"
 		return 1
 	fi
 }
