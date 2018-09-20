@@ -34,6 +34,14 @@ dockerbasecontainer() {
 			'ip')
 				echo $(docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}} {{end}}' $2 2> /dev/null) | tr ' ' '\n'
 				return;;
+			'is_running')
+				local is_running="$(docker inspect -f {{.State.Running}} "$2" 2>&1)"
+
+				if [ "${is_running}" == 'true' ]; then
+					return 0
+				fi
+
+				return 1;;
 			'logs')
 				if (dockerbasecontainer exists "$2"); then
 					docker logs "${@:3:${#}}" $2
@@ -73,7 +81,7 @@ dockerbasecontainer() {
 
 #Global Variables
 dockerbasecontainer_options=(
-	'exists' 'ip' 'name' 'restart' 'rm' 'shell' 'start' 'status' 'stop'
+	'exists' 'health' 'ip' 'is_running' 'name' 'restart' 'rm' 'shell' 'start' 'status' 'stop'
 )
 dockerbasecontainer_options_exec=('exec')
 dockerbasecontainer_options_logs=('logs')
