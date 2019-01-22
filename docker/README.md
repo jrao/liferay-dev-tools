@@ -86,7 +86,7 @@ dockertemplate -a databases/mysql
 4\. Here is a sample output of the generated alias:
 
 ```
-# Copy the follwing to your bash aliases:
+# Copy the following to your bash aliases:
 #
 # docker template for MYSQL
 # Username: root

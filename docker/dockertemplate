@@ -29,7 +29,7 @@ dockertemplate() {
 
 				cat "${templatefilepath}" | awk -v filePath="${templatefilepath}" '{
 					if (NR == 1) {
-						printf "\n# Copy the follwing to your bash aliases:\n"
+						printf "\n# Copy the following to your bash aliases:\n"
 					} else if ($1 !~ "^#.*") {
 						exit
 					} else {
